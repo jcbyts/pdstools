@@ -1,4 +1,4 @@
-function [spikeStructs, meanWaveforms] = concatenateSpikes(varargin)
+function [spikeStructs, spikesNew] = concatenateSpikes(varargin)
 % concatenate two spike time structures
 % example call:
 % 	spikesNew = concatenateSpikes(spikes1, spikes2)
@@ -58,6 +58,79 @@ end
 % normalize waveform amplitude and concatenate
 assert(all(nSamples==nSamples(1)), 'all waveforms must be the same size')
 
+% for pairs at a time... will functionize 
+%---------------------------------------------------------------------%
+% Waveform matching: from Tolias et al 2007
+baseStruct = 1; % start with first struct
+remaining = setdiff(1:nSpikeStructs, baseStruct);
+
+keyboard
+[a, d1, d2] = pdsa.waveformMatch(meanWaveforms{1}', meanWaveforms{2}');
+
+% idea is simple: get back an a, d1 and d2;  Loop over units in spikes1 and check if any of them exist in spikes 2.
+% If they do, great, combine them. If they don't, add them as new units.
+% Step 1: get start and stop time of each spikes struct -- the first one is zero to last spike.
+tStart = zeros(nSpikeStructs,1);
+tStop  = zeros(nSpikeStructs,1);
+
+tStop(1) = spikeStructs{1}.time(end)+10; % add 10 seconds to first file
+for ii = 2:nSpikeStructs
+	tStart(ii) = tStop(ii-1);
+	tStop(ii)  = tStart(ii) + spikeStructs{ii}.time(end) + 10;
+end
+
+% Loop over units in spikes1 and find best match in spikes 2
+unitMatch = zeros(n(1),3); %[id a(id) d1(id) d2(id)]
+for ii = 1:n(1)
+		[~, id1] = min(d1(ii,:));
+		[~, id2] = max(d2(ii,:));
+		if id1 == id2
+			unitMatch(ii,:) = [id1 d1(ii,id1) d2(ii,id2)];
+		end
+
+end
+
+% Check matches and correct for any duplicates
+uniqueMatches = unique(unitMatch(:,1));
+for kk = 1:numel(uniqueMatches)
+	unitCheck = unitMatch(:,1) == uniqueMatches(kk);
+	if any(unitCheck)
+		[~,idx1] = min(unitMatch(:,2));
+		[~,idx2] = max(unitMatch(:,3));	
+		if idx1 == idx1
+			xid = setdiff(find(unitCheck), idx1);
+			unitMatch(xid,:) = 0;
+		end
+	end
+end
+
+spikesTmp1 = spikeStructs{1};
+spikesTmp2 = spikeStructs{2};
+spikesTmp2.id = spikeStructs{2}.id + n(1);
+spikesTmp2.time = spikesTmp2.time + tStart(2);
+for ii = 1:n(1)
+	if unitMatch(ii,1) ~=0
+		idx = spikesTmp2.id == unitMatch(ii,1) + n(1);
+		spikesTmp2.id(idx) = ii;
+		spikesTmp2.channel(unitMatch(ii,1)) = 0;
+		spikesTmp2.snr(unitMatch(ii,1)) = 0;
+	end
+end
+
+spikesNew = struct('time', [spikesTmp1.time; spikesTmp2.time], ...
+	'id', [spikesTmp1.id; spikesTmp2.id], ...
+	'waveform', [spikesTmp1.waveform; spikesTmp2.waveform], ...
+	'channel', [spikesTmp1.channel spikesTmp2.channel], ...
+	'snr', [spikesTmp1.snr spikesTmp2.snr]);
+
+spikesNew.channel(spikesNew.channel == 0) = [];
+spikesNew.snr(spikesNew.snr == 0) = [];
+
+
+% spikeStructs{end+1} = spikesNew;
+% nSpikeStructs = numel(spikeStructs);
+
+
 
 %---------------------------------------------------------------------%
 % plot mean waveforms
@@ -67,6 +140,7 @@ for ii = 1:nSpikeStructs
 	fprintf('spike %d:\t %d neurons\r')
 	% figure(100+ii); clf
 	subplot(1,nSpikeStructs, ii)
+	% mean waveforms shifted by unit #
 	plot(bsxfun(@plus, 1:n(ii), meanWaveforms{ii}')); hold on
 	plot([(1:max(n-1))*nSamples(1); (1:max(n-1))*nSamples(1)], [0 max(n)+1], 'k:');
 
