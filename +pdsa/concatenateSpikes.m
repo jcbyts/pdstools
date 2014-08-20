@@ -64,7 +64,6 @@ assert(all(nSamples==nSamples(1)), 'all waveforms must be the same size')
 baseStruct = 1; % start with first struct
 remaining = setdiff(1:nSpikeStructs, baseStruct);
 
-keyboard
 [a, d1, d2] = pdsa.waveformMatch(meanWaveforms{1}', meanWaveforms{2}');
 
 % idea is simple: get back an a, d1 and d2;  Loop over units in spikes1 and check if any of them exist in spikes 2.
