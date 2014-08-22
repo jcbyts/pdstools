@@ -1,4 +1,4 @@
-function [plxtrialstart, plxtrialstop] = plx_pdsTrialTimes(PDSname, strobed, events)
+function [plxtrialstart, plxtrialstop] = pdsTrialTimes(PDSname, strobed, events)
 % [plxtrialstart, plxtrialstop] = plx_pdsTrialTimes(PDSname, strobed, events)
 % get start and stop time for each pds trial in plexon time
 
