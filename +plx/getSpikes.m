@@ -1,8 +1,9 @@
-function spikes = getSpikes(pl, useContinuous, verbose)
-% spikes = getSpikes(plstruct, continuousOnly, verbose)
-% get spike times and waveforms from plxname.plx
+function spikes = getSpikes(pl, verbose, useContinuous)
+% spikes = getSpikes(plstruct, verbose, useContinuousOnly)
+% get spike times and waveforms from plstruct
 % inputs:
-%   plxname     [string] - full/path/to/*.plx
+%   plstruct    [struct] - output of readPLXFileC(plxname, 'all')
+%   verbose     [0 or 1] - plot stuff if 1
 %   continuousOnly[bool] - if 1, use only spikes that came from a channel
 %                          with analog sample. This is required for binary
 %                          pursuit.
