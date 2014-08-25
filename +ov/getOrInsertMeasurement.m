@@ -21,18 +21,43 @@ function measurement = getOrInsertMeasurement(epoch, tag, files)
 
 if nargin < 3
 	files = [];
+	if nargin < 2
+		tag = [];
+	end
 end
 
 measurements = ovation.asarray(epoch.getMeasurements);
-if isempty(files)
-	measurement = measurements;
-	return
-end
-
 nMeasurements = numel(measurements);
 
-% if file array is passed in
-if ~isempty(files)
+
+if isempty(files)
+if isempty(tag)
+	measurement = measurements;
+	fprintf('found %d measurements\r', nMeasurements)
+	for ii = 1:nMeasurements
+		fprintf('%d) %s\r', ii, char(measurements(ii).getName))
+	end
+	return
+elseif isnumeric(tag) && tag <= nMeasurements
+	measurement = measurements(tag);
+	return
+elseif ischar(tag)
+	measBool = false(nMeasurements,1);
+	for ii = 1:nMeasurements
+		strind = strfind(char(measurements(ii).getName), tag);
+		if ~isempty(strind)
+			measBool(ii) = true;
+		end
+	end		
+	fprintf('found %d measurements that match %s\r', sum(measBool), tag)
+	measurement = measurements(measBool);
+	return
+
+end
+
+else
+	body
+
 	if ischar(files)
 		files = {files};
 	end
@@ -64,9 +89,9 @@ if ~isempty(files)
 	measurements = measurements(fileInd);
 end
 
-if ~isempty(measurements)
-	measurement = ov_getTag(measurements, tag);
-end
+% if ~isempty(measurements)
+% 	measurement = ov_getTag(measurements, tag);
+% end
 
 end
 

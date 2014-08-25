@@ -19,10 +19,12 @@ function [an_info, an_data] = getAnalog(pl, analogChannels)
 % 20140531  jly     wrote it
 % 20140820  jly     changed to readPLX version
 
+import plx.*
+
 an_info  = struct();
 an_data  = [];
 if nargin < 1
-    help plx_getAnalog
+    help getAnalog
     return
 end
 
@@ -45,4 +47,21 @@ an_info.nsamples = sum(pl.ContinuousChannels(analogChannels(1)).Fragments);
 an_info.timestamps  = double(pl.ContinuousChannels(analogChannels(1)).Timestamps)/pl.ContinuousChannels(analogChannels(1)).ADFrequency;
 an_info.fragsamples = double(pl.ContinuousChannels(analogChannels(1)).Fragments);
 an_info.channels    = [pl.ContinuousChannels(analogChannels).Channel];
-an_data = [pl.ContinuousChannels(analogChannels).Values];
+
+
+
+try 
+	an_data = [pl.ContinuousChannels(analogChannels).Values];
+catch me
+	fprintf('failed to concatenate. proceeding the slow way\r')
+	nChannels = numel(analogChannels);
+	fragSize = zeros(nChannels,1);
+	for ii = 1:nChannels
+		fragSize(ii) = sum(pl.ContinuousChannels(ii).Fragments);
+	end
+	an_data = zeros(min(fragSize), nChannels, 'int16');
+	for ii = 1:nChannels
+		% an_data = [pl.ContinuousChannels(analogChannels).Values];
+		an_data(:,ii) = pl.ContinuousChannels(ii).Values(1:min(fragSize));
+	end
+end

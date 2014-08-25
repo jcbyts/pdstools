@@ -3,6 +3,8 @@ function importPLXEvents(epoch, pl)
 % importPLXEvents(epoch, pl)
 
 import ov.*
+import plx.*
+import pdsa.*
 
 assert(isa(epoch, 'us.physion.ovation.domain.concrete.Epoch'), 'first argument must be an epoch')
 
@@ -10,13 +12,25 @@ rawPLX 	= getAnalysis(epoch, 'Raw PLX Data');
 
 
 if nargin < 2 || isempty(pl)
-	[plxfile, plxpath] = uigetfile('*.plx');
-	pl = fullfile(plxpath, plxfile);
+	meas = ov.getOrInsertMeasurement(epoch, 'plx');
+	nMeas = numel(meas);
+	if nMeas == 1
+		pl = ovation.datapath(meas);
+	elseif nMeas > 1
+		for ii = 1:nMeas
+			fprintf('%d) %s\r', ii, char(meas(ii).getName))
+		end
+		mi = input('which plx file did you want to load?'  );
+		pl = ovation.datapath(meas(mi));
+	else
+		[plxfile, plxpath] = uigetfile('*.plx');
+		pl = fullfile(plxpath, plxfile);
+	end
 end
 
 if isstr(pl)
 	if exist(pl, 'file')
-		fprintf('reading in plexon file')
+		fprintf('reading in plexon file\r')
 		pl   = readPLXFileC(pl, 'all');
 	else
 		fprintf('fail\r')
@@ -64,12 +78,11 @@ if isempty(rawPLX)
 	rawPLX 	= getAnalysis(epoch, 'Raw PLX Data');
 end
 
-keyboard
 if isempty(ov.getOutput(rawPLX, 'continuous'))
 	mkdir('tmp')
 	fname = [char(epoch.getExperiment.getPurpose) '_continuous.mat'];
 	fname = fullfile(pwd, 'tmp', fname);
-	save(fname, 'an_info', 'an_data')
+	save(fname, 'an_info', 'an_data', '-v7.3')
 	addOutput(rawPLX, fname, 'continuous')
 	delete(fname)
 	rmdir('tmp')
@@ -79,7 +92,7 @@ if isempty(ov.getOutput(rawPLX, 'lfp'))
 	mkdir('tmp')
 	fname = [char(epoch.getExperiment.getPurpose) '_lfp.mat'];
 	fname = fullfile(pwd, 'tmp', fname);
-	save(fname, 'lfp_info', 'lfp_data')
+	save(fname, 'lfp_info', 'lfp_data', '-v7.3')
 	addOutput(rawPLX, fname, 'lfp')
 	delete(fname)
 	rmdir('tmp')

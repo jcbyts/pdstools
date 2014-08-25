@@ -59,7 +59,7 @@ for ii = 1:nChannels
     spikes.id   = [spikes.id; ones(numel(pl.SpikeChannels(channelsWithUnits(ii)).Timestamps),1).*double(pl.SpikeChannels(channelsWithUnits(ii)).Units(:)+spikeCtr)];
     spikes.waveform = [spikes.waveform; double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)'];
     spikes.channel  = [spikes.channel repmat(pl.SpikeChannels(channelsWithUnits(ii)).Channel, 1, pl.SpikeChannels(channelsWithUnits(ii)).NUnits)];
-    spikeCtr = spikeCtr + 1;
+    spikeCtr = spikeCtr + pl.SpikeChannels(channelsWithUnits(ii)).NUnits;
 end
 
 [spikes.time, ord] = sort(spikes.time);
