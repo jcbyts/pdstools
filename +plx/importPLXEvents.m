@@ -83,9 +83,11 @@ if isempty(ov.getOutput(rawPLX, 'continuous'))
 	fname = [char(epoch.getExperiment.getPurpose) '_continuous.mat'];
 	fname = fullfile(pwd, 'tmp', fname);
 	save(fname, 'an_info', 'an_data', '-v7.3')
+    fprintf('adding continuous data\r')
 	addOutput(rawPLX, fname, 'continuous')
 	delete(fname)
 	rmdir('tmp')
+    fprintf('Done\r')
 end
 
 if isempty(ov.getOutput(rawPLX, 'lfp'))
@@ -93,9 +95,11 @@ if isempty(ov.getOutput(rawPLX, 'lfp'))
 	fname = [char(epoch.getExperiment.getPurpose) '_lfp.mat'];
 	fname = fullfile(pwd, 'tmp', fname);
 	save(fname, 'lfp_info', 'lfp_data', '-v7.3')
+    fprintf('adding lfp data\r')
 	addOutput(rawPLX, fname, 'lfp')
 	delete(fname)
 	rmdir('tmp')
+    fprintf('Done\r')
 end
 
 if isempty(ov.getOutput(rawPLX, 'events'))
@@ -103,17 +107,21 @@ if isempty(ov.getOutput(rawPLX, 'events'))
 	fname = [char(epoch.getExperiment.getPurpose) '_events.mat'];
 	fname = fullfile(pwd, 'tmp', fname);
 	save(fname, 'events', 'strobed', 'info')
+    fprintf('adding event data\r')
 	addOutput(rawPLX, fname, 'events')
 	delete(fname)
 	rmdir('tmp')
+    fprintf('Done\r')
 end
 
 if isempty(ov.getOutput(rawPLX, 'spikes'))
 	mkdir('tmp')
 	fname = [char(epoch.getExperiment.getPurpose) '_spikes.mat'];
 	fname = fullfile(pwd, 'tmp', fname);
+    fprintf('adding spike data\r')
 	save(fname, 'spikes')
 	addOutput(rawPLX, fname, 'spikes')
 	delete(fname)
 	rmdir('tmp')
+    fprintf('Done\r')
 end

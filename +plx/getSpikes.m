@@ -68,7 +68,7 @@ spikes.waveform    = spikes.waveform(ord,:);
 
 % calculate waveform SNR
 units  = unique(spikes.id);
-nUnits = numel(units);
+nUnits = numel(find(units>0));
 spikes.snr = zeros(1,nUnits);
 for ii = 1:nUnits
     idx = spikes.id == units(ii);
