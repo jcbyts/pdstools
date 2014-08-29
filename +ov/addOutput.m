@@ -9,7 +9,7 @@ function addOutput(analysisRecord, saveFileName, outputName)
 % 20140531 jly	wrote it
 % 20140822 jly	package version
 
-assert(isa(analysisRecord, 'us.physion.ovation.domain.concrete.AnalysisRecord'), 'add outut only works for analysis records')
+assert(isa(analysisRecord, 'us.physion.ovation.domain.concrete.AnalysisRecord'), 'add output only works for analysis records')
 assert(exist(saveFileName, 'file')>0, 'saveFileName must be a path to a file that exists')
 assert(ischar(outputName), 'you can call your output whatever you want, but it has to be a string')
 

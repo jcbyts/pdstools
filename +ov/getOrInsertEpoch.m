@@ -44,7 +44,13 @@ else
 		protocol_name = protocol;
 	elseif isnumeric(protocol)
 		if protocol <=nEpochs
-			protocol_name = char(epochs(protocol).getProtocol.getName);
+            ep = epochs(protocol);
+            prot = ep.getProtocol;
+            if isempty(prot)
+                epoch = [];
+                return
+            end
+			protocol_name = char(prot.getName);
 		else
 			epoch = epochs;
 			return

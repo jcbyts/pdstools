@@ -78,6 +78,10 @@ if isempty(rawPLX)
 	rawPLX 	= getAnalysis(epoch, 'Raw PLX Data');
 end
 
+if numel(rawPLX) > 1
+    rawPLX = rawPLX(1);
+end
+
 if isempty(ov.getOutput(rawPLX, 'continuous'))
 	mkdir('tmp')
 	fname = [char(epoch.getExperiment.getPurpose) '_continuous.mat'];
