@@ -57,9 +57,16 @@ plxtrialstop  = nan(numel(PDS.goodtrial),1);
 for tr = 1:ntrials
     
     uniqchk = sum(strobed.values(plxtr,2:end) == PDS.unique_number(pdstr,2:end))==5;
+
     while ~uniqchk
-        pdstr = pdstr + 1;
-%         plxtr = plxtr + 1;
+        plxtimestamp = datenum(double([PDS.unique_number(pdstr,1) strobed.values(plxtr,2:end)]));
+        pdstimestamp = datenum(PDS.unique_number(pdstr,1:end));
+        if plxtimestamp<pdstimestamp
+            plxtr = plxtr + 1;
+        else
+            pdstr = pdstr + 1;
+        end
+        
         uniqchk = sum(strobed.values(plxtr,2:end) == PDS.unique_number(pdstr,2:end))==5;
     end
     [~, id] = min(abs(strobed.times(plxtr)-trialStarts));
