@@ -19,7 +19,9 @@ nSamples = zeros(nSpikeStructs,1);
 list = cell(nSpikeStructs,1);
 channels = []; 
 first_continuous_channel = zeros(nSpikeStructs,1);
+remove = false(nSpikeStructs,1);
 for ii = 1:nSpikeStructs
+    if ~isempty(spikeStructs{ii})
 	list{ii} = unique(spikeStructs{ii}.id);
 	n(ii) = numel(list{ii});
 	nSamples(ii) = size(spikeStructs{ii}.waveform,2);
@@ -28,8 +30,17 @@ for ii = 1:nSpikeStructs
         spikeStructs{ii}.first_continuous_channel = 64;
     end
 	first_continuous_channel(ii) = spikeStructs{ii}.first_continuous_channel;
+    else
+        remove(ii) = true;
+    end
 end
 
+spikeStructs(remove) = [];
+list(remove) = [];
+n(remove) = [];
+nSamples(remove) = [];
+first_continuous_channel(remove) = [];
+nSpikeStructs = nSpikeStructs-sum(remove);
 
 channels  = unique(channels);
 nChannels = numel(channels);
@@ -61,17 +72,59 @@ end
 % normalize waveform amplitude and concatenate
 assert(all(nSamples==nSamples(1)), 'all waveforms must be the same size')
 
+
+%% check all 3 way combos
+[s1, s2, s3] = ndgrid(list{1:3});
+combos = [s1(:) s2(:) s3(:)];
+nCombos = size(combos,1);
+
+M = cell(3,1);
+M{1} = zeros(n(1), n(2));
+M{2} = zeros(n(1), n(3));
+M{3} = zeros(n(2), n(3));
+% miniB = 10;
+D = zeros(nCombos, 3); % stupid distance metric
+for ii = 1:nCombos
+    C = corrcoef([meanWaveforms{1}(combos(ii,1),:)' meanWaveforms{2}(combos(ii,2),:)' meanWaveforms{3}(combos(ii,3),:)']);
+    D(ii,:) = C([2 3 6]);
+end
+
+idx = sum(D,2) < 1e-3;
+combos(idx,:) = [];
+D(idx,:) = [];
+
+ind = sub2ind(size(M{1}), combos(:,1), combos(:,2));
+M{1}(ind) = D(:,1);
+[~, id1] = max(M{1},[], 1);
+[~, id2] = max(M{1},[], 2);
+nb = numel((id1));
+mm = false(nb,1);
+for bb = 1:nb
+    mm(bb) = bb==(id2(id1(bb)));
+end
+
+nb = numel((id2));
+nn = false(nb,1);
+for bb = 1:nb
+    nn(bb) = bb==(id1(id2(bb)));
+end
+
+[find(mm) id1(mm)']
+[find(nn) id2(nn)]
+%%
+
+
 %---------------------------------------------------------------------%
 % plot mean waveforms
 figure(100); clf
 set(gca, 'Color', 'w')
 for ii = 1:nSpikeStructs
-	fprintf('spike %d:\t %d neurons\r')
+	fprintf('spike %d:\t %d neurons\r', ii, n(ii))
 	% figure(100+ii); clf
 	subplot(1,nSpikeStructs, ii)
 	% mean waveforms shifted by unit #
 	plot(bsxfun(@plus, 1:n(ii), meanWaveforms{ii}')); hold on
-	plot([(1:max(n-1))*nSamples(1); (1:max(n-1))*nSamples(1)], [0 max(n)+1], 'k:');
+	plot([(1:max(nChannels-1))*nSamples(1); (1:max(nChannels-1))*nSamples(1)], [0 max(n)+1], 'k:');
 
 	ylim([0 max(n)+1])
 	title(sprintf('spikes %d', ii))
@@ -127,9 +180,11 @@ for ii = 1:nSpikeStructs
 	spikeStructs{ii}.snr 	 = nan(max(unitMatch{ii}),1);
 	spikeStructs{ii}.channel = nan(max(unitMatch{ii}),1);
 	for jj = 1:n(ii)
-		spikeStructs{ii}.id(tmpSpikeStruct.id==jj) = unitMatch{ii}(jj);
-		spikeStructs{ii}.snr(unitMatch{ii}(jj)) = tmpSpikeStruct.snr(jj);
-		spikeStructs{ii}.channel(unitMatch{ii}(jj)) = tmpSpikeStruct.channel(jj);
+        if unitMatch{ii}(jj)~=0
+            spikeStructs{ii}.id(tmpSpikeStruct.id==jj) = unitMatch{ii}(jj);
+            spikeStructs{ii}.snr(unitMatch{ii}(jj)) = tmpSpikeStruct.snr(jj);
+            spikeStructs{ii}.channel(unitMatch{ii}(jj)) = tmpSpikeStruct.channel(jj);
+        end
 	end
 end
 
