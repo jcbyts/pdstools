@@ -33,6 +33,9 @@ if isnumeric(outputName) && outputName <= nOutputs
     return
 end
 
+% check for symbols that don't show up in ovation for some reason
+outputName(strfind(outputName, '-')) = '_';
+
 isOutput = false(nOutputs,1);
 for ii = 1:nOutputs
 	isOutput(ii) = strcmp(outputName, outputNames{ii});
