@@ -13,6 +13,28 @@ function [spikeStructs, spikesNew] = concatenateSpikes(varargin)
 
 spikeStructs = varargin(:); % leave while debugging
 nSpikeStructs = numel(spikeStructs);
+wf = zeros(nSpikeStructs,1);
+for ii = 1:nSpikeStructs
+    wf(ii) = size(spikeStructs{ii}.waveform,2);
+end
+
+if ~all(wf==wf(1))
+    disp('mistmatched waveform samples')
+    uwf = unique(wf);
+    assert(numel(uwf)==2, 'wtf. only two sampling rates')
+    nwf = lcm(uwf(1),uwf(2));
+    
+    for ii = 1:nSpikeStructs
+        spikeStructs{ii}.waveform_old = spikeStructs{ii}.waveform;
+        nw = size(spikeStructs{ii}.waveform,1);
+        nws = size(spikeStructs{ii}.waveform,2);
+        spikeStructs{ii}.waveform = zeros(nw, nwf);
+        for jj = 1:nw
+            spikeStructs{ii}.waveform(jj,:) = interp(spikeStructs{ii}.waveform_old(jj,:), nwf/nws);
+        end
+        fprintf('%2.0f done\r', ii/nSpikeStructs*100)
+    end
+end
 
 n = zeros(nSpikeStructs,1);
 nSamples = zeros(nSpikeStructs,1);
@@ -90,7 +112,6 @@ for ii = 1:nSpikeStructs
 		'XtickLabel', channels-first_continuous_channel(1))
     xlim([1 size(meanWaveforms{1},2)]) 
 end
-
 
 
 % normalize waveform amplitude and concatenate

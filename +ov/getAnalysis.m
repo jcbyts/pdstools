@@ -16,42 +16,42 @@ function analysisRecord = getAnalysis(epoch, analysisRecordName)
 
 import ov.*
 
-assert(isa(epoch, 'us.physion.ovation.domain.concrete.Epoch'), 'looking for analysis records for a specific epoch')
+% assert(isa(epoch, 'us.physion.ovation.domain.concrete.Epoch'), 'looking for analysis records for a specific epoch')
 
-anals = ovation.asarray(epoch.getAnalysisRecords());
-nAnals = numel(anals);
+anRecs = ovation.asarray(epoch.getAnalysisRecords());
+nAnRecs = numel(anRecs);
 
-if nAnals == 0
+if nAnRecs == 0
 	analysisRecord = [];
 	fprintf('there are no analysis records for this epoch\r')
 	return
 end
 
 if nargin < 2 || isempty(analysisRecordName)
-	fprintf('found %d analysis records.\r', nAnals)
-	for ii = 1:nAnals
-		fprintf('%d. %s\r', ii, char(anals(ii).getName()))
+	fprintf('found %d analysis records.\r', nAnRecs)
+	for ii = 1:nAnRecs
+		fprintf('%d. %s\r', ii, char(anRecs(ii).getName()))
 	end
-	analysisRecord = anals;
+	analysisRecord = anRecs;
 	return
 end
 
-if isnumeric(analysisRecordName) && analysisRecordName<=nAnals
-	analysisRecord = anals(analysisRecordName);
+if isnumeric(analysisRecordName) && analysisRecordName<=nAnRecs
+	analysisRecord = anRecs(analysisRecordName);
 	fprintf('returning analysis record: %s\r', char(analysisRecord.getName))
 	return
 end
 
 
-if nAnals>0
-	isAnal = false(nAnals,1);
+if nAnRecs>0
+	isAnal = false(nAnRecs,1);
 	if isa(analysisRecordName, 'us.physion.ovation.domain.concrete.AnalysisRecord')
-		for ii = 1:nAnals
-			isAnal(ii) = analysisRecordName == anals(ii);
+		for ii = 1:nAnRecs
+			isAnal(ii) = analysisRecordName == anRecs(ii);
 		end
 	elseif ischar(analysisRecordName)
-		for ii = 1:nAnals
-			isAnal(ii) = strcmp(analysisRecordName, anals(ii).getName());
+		for ii = 1:nAnRecs
+			isAnal(ii) = strcmp(analysisRecordName, anRecs(ii).getName());
 		end
 	end
 else
@@ -59,7 +59,7 @@ else
 end
 
 if any(isAnal)
-	analysisRecord = anals(isAnal);
+	analysisRecord = anRecs(isAnal);
 else
 	analysisRecord = [];
 end
