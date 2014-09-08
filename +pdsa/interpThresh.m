@@ -52,7 +52,11 @@ if numel(unique(y)) < numel(y)
     y = y(yInd);
     x = x(yInd);
 end
-thresh = interp1(y, x, level);
+if max(y) < level
+    thresh = inf;
+else
+    thresh = interp1(y, x, level);
+end
 
 
 % old version with core ab requirements

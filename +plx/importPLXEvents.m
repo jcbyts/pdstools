@@ -82,7 +82,7 @@ if numel(rawPLX) > 1
     rawPLX = rawPLX(1);
 end
 
-if isempty(ov.getOutput(rawPLX, 'continuous'))
+if isempty(ov.getOutput(rawPLX, 'continuous')) && exist('an_info', 'var')
 	mkdir('tmp')
 	fname = [char(epoch.getExperiment.getPurpose) '_continuous.mat'];
 	fname = fullfile(pwd, 'tmp', fname);
@@ -94,7 +94,7 @@ if isempty(ov.getOutput(rawPLX, 'continuous'))
     fprintf('Done\r')
 end
 
-if isempty(ov.getOutput(rawPLX, 'lfp'))
+if isempty(ov.getOutput(rawPLX, 'lfp')) && exist('lfp_info', 'var')
 	mkdir('tmp')
 	fname = [char(epoch.getExperiment.getPurpose) '_lfp.mat'];
 	fname = fullfile(pwd, 'tmp', fname);
