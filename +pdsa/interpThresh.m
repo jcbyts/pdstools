@@ -28,18 +28,25 @@ if nargin < 2 || isempty(level)
 	end
 end
 
-
-% Diagnostics of the point estimate
-if inference.gammaislambda
-    diag = Diagnostics ( inference.data, inference.params_estimate, ...
-        'sigmoid', inference.sigmoid, 'core', inference.core, 'nafc', inference.nafc, 'cuts', inference.cuts, 'gammaislambda' );
-else
-    diag = Diagnostics ( inference.data, inference.params_estimate, ...
-        'sigmoid', inference.sigmoid, 'core', inference.core, 'nafc', inference.nafc, 'cuts', inference.cuts );
+switch inference.nafc
+    case 2
+        x = linspace(0,1,100);
+    case 1
+        x = linspace(min(inference.data(:,1)), max(inference.data(:,1)), 100);
 end
 
-x = diag.pmf(:,1);
-y = diag.pmf(:,2);
+
+% % Diagnostics of the point estimate
+% if inference.gammaislambda
+%     diag = Diagnostics ( inference.data, inference.params_estimate, ...
+%         'sigmoid', inference.sigmoid, 'core', inference.core, 'nafc', inference.nafc, 'cuts', inference.cuts, 'gammaislambda' );
+% else
+%     diag = Diagnostics ( inference.data, inference.params_estimate, ...
+%         'sigmoid', inference.sigmoid, 'core', inference.core, 'nafc', inference.nafc, 'cuts', inference.cuts );
+% end
+y = evaluate(x, inference);
+% x = diag.pmf(:,1);
+% y = diag.pmf(:,2);
 
 % if things aren't monotonic because it saturates too early
 if numel(unique(y)) < numel(y)
