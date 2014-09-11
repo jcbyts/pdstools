@@ -116,7 +116,7 @@ for ii = 1:nSpikeStructs
 	set(gca, 'Xtick', xax(1:end), ...
 		'XtickLabel', channels-first_continuous_channel(ii))
 %     xlim([1 (max(channels) - first_continuous_channel(ii))*nSamples(ii)]) 
-    xlim([1 xax(end)])
+    xlim([1 size(meanWaveforms{ii},2)])
 end
 
 continueMatch = input('try waveform match? (1 or 0)');
@@ -224,8 +224,8 @@ for ii = 1:nSpikeStructs
 %     xax = (	((1:(max(n)-1)) - 1)*nSamples(1)) + nSamples(1)/2;
 	set(gca, 'Xtick', xax(1:end), ...
 		'XtickLabel', channels-first_continuous_channel(ii))
-%     xlim([1 size(meanWaveforms{1},2)]) 
-    xlim([1 xax(end)])
+    xlim([1 size(meanWaveforms{ii},2)]) 
+%     xlim([1 xax(end)])
 end
 
 nNeurons = size(match,1);
