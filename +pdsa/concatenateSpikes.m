@@ -1,4 +1,4 @@
-function [spikeStructs, spikesNew] = concatenateSpikes(varargin)
+function [spikeStructs, spikeStructsNew] = concatenateSpikes(varargin)
 % concatenate two spike time structures
 % example call:
 % 	spikesNew = concatenateSpikes(spikes1, spikes2)
@@ -10,8 +10,8 @@ function [spikeStructs, spikesNew] = concatenateSpikes(varargin)
 % 		.channel
 % 		.snr
 % 		.first_continuous_channel
-
 spikeStructs = varargin(:); % leave while debugging
+spikeStructsNew = spikeStructs;
 nSpikeStructs = numel(spikeStructs);
 wf = zeros(nSpikeStructs,1);
 for ii = 1:nSpikeStructs
@@ -44,15 +44,15 @@ first_continuous_channel = zeros(nSpikeStructs,1);
 remove = false(nSpikeStructs,1);
 for ii = 1:nSpikeStructs
     if ~isempty(spikeStructs{ii})
-	list{ii} = unique(spikeStructs{ii}.id);
-	n(ii) = numel(list{ii});
-	nSamples(ii) = size(spikeStructs{ii}.waveform,2);
-	channels = [channels; spikeStructs{ii}.channel(:)];
-    if ~isfield(spikeStructs{ii}, 'first_continuous_channel')
-        spikeStructs{ii}.first_continuous_channel = 64;
-    end
-	first_continuous_channel(ii) = spikeStructs{ii}.first_continuous_channel;
-    else
+        list{ii} = unique(spikeStructs{ii}.id);
+        n(ii) = numel(list{ii});
+        nSamples(ii) = size(spikeStructs{ii}.waveform,2);
+        channels = [channels; spikeStructs{ii}.channel(list{ii})']; %#ok<*AGROW>
+        if ~isfield(spikeStructs{ii}, 'first_continuous_channel')
+            spikeStructs{ii}.first_continuous_channel = 64;
+        end
+        first_continuous_channel(ii) = spikeStructs{ii}.first_continuous_channel;
+	else
         remove(ii) = true;
     end
 end
@@ -70,14 +70,15 @@ meanWaveforms = cell(nSpikeStructs,1);
 for ii = 1:nSpikeStructs
 	meanWaveforms{ii} = zeros(n(ii), nChannels*nSamples(ii));
 	for jj = 1:n(ii)
-		ch = spikeStructs{ii}.channel(jj) - spikeStructs{ii}.first_continuous_channel;
-		ch = find(channels-first_continuous_channel(ii)==ch);
-		% idx = ((jj-1).*32 + 1):(jj.*nSamples(1));
-		idx = ((ch-1)*nSamples(ii) + 1):(ch*nSamples(ii));
-		mw=mean(spikeStructs{ii}.waveform(spikeStructs{ii}.id==list{ii}(jj),:));
-		mw = mw - mean(mw);
-		mw = mw/norm(mw);
-		meanWaveforms{ii}(jj,idx) = mw;
+		ch = spikeStructs{ii}.channel(list{ii}(jj)) - spikeStructs{ii}.first_continuous_channel;
+        if ~isnan(ch)
+            ch = find(channels-first_continuous_channel(ii)==ch);
+            idx = ((ch-1)*nSamples(ii) + 1):(ch*nSamples(ii));
+            mw=mean(spikeStructs{ii}.waveform(spikeStructs{ii}.id==list{ii}(jj),:));
+            mw = mw - mean(mw);
+            mw = mw/norm(mw);
+            meanWaveforms{ii}(jj,idx) = mw;
+        end
 	end
 end
 
@@ -94,6 +95,7 @@ end
 
 %---------------------------------------------------------------------%
 % plot mean waveforms
+
 figure(100); clf
 set(gca, 'Color', 'w')
 for ii = 1:nSpikeStructs
@@ -101,30 +103,40 @@ for ii = 1:nSpikeStructs
 	% figure(100+ii); clf
 	subplot(1,nSpikeStructs, ii)
     
-	plot(bsxfun(@plus,1:n(ii), meanWaveforms{ii}(1:n(ii),:)')); hold on
-	plot([(1:max(nChannels))*nSamples(1); (1:max(nChannels))*nSamples(1)], [0 max(n)+1], 'k:');
-
-	ylim([0 max(n)+1])
+% 	plot(bsxfun(@plus,1:n(ii), meanWaveforms{ii}(1:n(ii),:)')); hold on
+    plot(bsxfun(@plus,list{ii}', meanWaveforms{ii}(1:n(ii),:)')); hold on
+	plot([(1:max(nChannels))*nSamples(1); (1:max(nChannels))*nSamples(ii)], [0 max(n)+1], 'k:');
+    
+% 	ylim([0 max(n)+1])
+    ylim([0 max(cell2mat(list(:)))+1])
     
 	title(sprintf('spikes %d', ii))
-    xax = (	((1:(max(n)-1)) - 1)*nSamples(1)) + nSamples(1)/2;
-	set(gca, 'Xtick', xax(1:end-2), ...
-		'XtickLabel', channels-first_continuous_channel(1))
-    xlim([1 size(meanWaveforms{1},2)]) 
+%     channels(~isnan(channels))-first_continuous_channel(ii)
+    xax = (	((1:(max(n)))-1)*nSamples(1)) + nSamples(1)/2;
+	set(gca, 'Xtick', xax(1:end), ...
+		'XtickLabel', channels-first_continuous_channel(ii))
+%     xlim([1 (max(channels) - first_continuous_channel(ii))*nSamples(ii)]) 
+    xlim([1 xax(end)])
 end
 
-
+continueMatch = input('try waveform match? (1 or 0)');
+if ~continueMatch
+    return
+end
 % normalize waveform amplitude and concatenate
 assert(all(nSamples==nSamples(1)), 'all waveforms must be the same size')
 
 
 %% check all 3 way combos
+units = cellfun(@(x) 1:x, num2cell(n), 'Uniformoutput', false);
 switch nSpikeStructs
     case 2
-        [s1, s2] = ndgrid(list{1:nSpikeStructs});
+%         [s1, s2] = ndgrid(list{1:nSpikeStructs});
+        [s1, s2] = ndgrid(units{:});
         combos = [s1(:) s2(:)];
     case 3
-        [s1, s2, s3] = ndgrid(list{1:nSpikeStructs});
+%         [s1, s2, s3] = ndgrid(list{1:nSpikeStructs});
+        [s1, s2, s3] = ndgrid(units{:});
         combos = [s1(:) s2(:) s3(:)];
 end
 nCombos = size(combos,1);
@@ -191,8 +203,6 @@ for ii = 1:nPairs
 end
 
 %%
-
-
 %---------------------------------------------------------------------%
 % plot mean waveforms
 figure(100); clf
@@ -205,30 +215,37 @@ for ii = 1:nSpikeStructs
     tind = ~isnan(match(:,ii));
     
 	plot(bsxfun(@plus,find(tind)', meanWaveforms{ii}(match(tind,ii),:)')); hold on
-	plot([(1:max(nChannels))*nSamples(1); (1:max(nChannels))*nSamples(1)], [0 max(size(match,1))+1], 'k:');
+	plot([(1:max(nChannels))*nSamples(1); (1:max(nChannels))*nSamples(ii)], [0 max(size(match,1))+1], 'k:');
 
 	ylim([0 size(match,1)+1])
     
 	title(sprintf('spikes %d', ii))
-    xax = (	((1:(max(n)-1)) - 1)*nSamples(1)) + nSamples(1)/2;
-	set(gca, 'Xtick', xax(1:end-2), ...
-		'XtickLabel', channels-first_continuous_channel(1))
-    xlim([1 size(meanWaveforms{1},2)]) 
+    xax = (	((1:(max(n)))-1)*nSamples(1)) + nSamples(1)/2;
+%     xax = (	((1:(max(n)-1)) - 1)*nSamples(1)) + nSamples(1)/2;
+	set(gca, 'Xtick', xax(1:end), ...
+		'XtickLabel', channels-first_continuous_channel(ii))
+%     xlim([1 size(meanWaveforms{1},2)]) 
+    xlim([1 xax(end)])
 end
 
 nNeurons = size(match,1);
 spikesNew = repmat(struct('time', [], 'id', [], 'waveform', [], 'channel', nan(1,nNeurons), 'snr', nan(1,nNeurons), 'first_continuous_channel', 64, 'continuous_only', 1), nSpikeStructs,1);
 
 for ii = 1:nSpikeStructs
+%     chans = spikeStructs{ii}.channel(~isnan(spikeStructs{ii}.channel));
+%     snr   = spikeStructs{ii}.snr(~isnan(spikeStructs{ii}.snr));
     for jj = 1:nNeurons
         if ~isnan(match(jj,ii))
-            ind = spikeStructs{ii}.id==match(jj,ii);
+            
+            ind = spikeStructs{ii}.id==list{ii}(match(jj,ii));
             spks = spikeStructs{ii}.time(ind);
             spikesNew(ii).time = [spikesNew(ii).time; spks(:)];
             spikesNew(ii).id   = [spikesNew(ii).id; ones(numel(spks),1)*jj];
             spikesNew(ii).waveform = [spikesNew(ii).waveform; spikeStructs{ii}.waveform(ind,:)];
-            spikesNew(ii).channel(jj) = spikeStructs{ii}.channel(match(jj,ii));
-            spikesNew(ii).snr(jj) = spikeStructs{ii}.snr(match(jj,ii));
+            spikesNew(ii).channel(jj) = spikeStructs{ii}.channel(list{ii}(match(jj,ii)));
+%             spikesNew(ii).channel(jj) = chans(match(jj,ii));
+            spikesNew(ii).snr(jj) = spikeStructs{ii}.snr(list{ii}(match(jj,ii)));
+%             spikesNew(ii).snr(jj) = snr(match(jj,ii));
         end
         if isfield(spikeStructs{ii}, 'first_continuous_channel')
             spikesNew(ii).first_continuous_channel = spikeStructs{ii}.first_continuous_channel;
@@ -236,6 +253,9 @@ for ii = 1:nSpikeStructs
     end
 end
 %%
+for ii = 1:nSpikeStructs
+    spikeStructsNew{ii} = spikesNew(ii);
+end
 fprintf('\r\r\r\r')
 
 % % good = input('is it good?');
