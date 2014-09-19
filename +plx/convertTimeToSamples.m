@@ -27,7 +27,7 @@ nfragments = numel(fn);
 fb = ts;
 fe = (ts+fn*adfreq);
 
-samples = zeros(numel(times),1);
+samples = nan(numel(times),1);
 for ff = 1:nfragments
     idx = times >= fb(ff) & times <= fe(ff);
     samples(idx) = floor((times(idx) - fb(ff))*adfreq)+1;
