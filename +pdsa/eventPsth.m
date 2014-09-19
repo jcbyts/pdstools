@@ -33,22 +33,35 @@ if ~isempty(skern)
     skern = skern/sum(skern);
     znorm = filter(skern,1,ones(nbins+1,1));
 end
-validEvents = find(~isnan(ev));
-nEvents = numel(validEvents);
-tspcnt  = zeros(nEvents, nbins);
-for ii = 1:nEvents
-    ievent = validEvents(ii);
-    st = sptimes - ev(ievent);
-    spcnt = histc(st, be);
-    if isempty(skern)
-        smcnt = spcnt;
-    else
-        smcnt = filter(skern,1,spcnt)./znorm;
-    end
-    
-    if any(spcnt)
-        tspcnt(ii,:)  = smcnt(1:nbins);
-    end
+validEvents = ~isnan(ev);
+nEvents = sum(validEvents);
+
+% for loop version (super slow)
+% validEvents = find(~isnan(ev));
+% nEvents = numel(validEvents);
+% tspcnt  = zeros(nEvents, nbins);
+% for ii = 1:nEvents
+%     ievent = validEvents(ii);
+%     st = sptimes - ev(ievent);
+%     spcnt = histc(st, be);
+%     if isempty(skern)
+%         smcnt = spcnt;
+%     else
+%         smcnt = filter(skern,1,spcnt)./znorm;
+%     end
+%     
+%     if any(spcnt)
+%         tspcnt(ii,:)  = smcnt(1:nbins);
+%     end
+% end
+
+% bsxfun version
+tmpspcnt = bsxfun(@minus, sptimes, ev(validEvents)');
+
+tspcnt    = histc(tmpspcnt, be)';
+tspcnt(:,end) = [];
+if ~isempty(skern)
+    tspcnt = filter(skern, 1, tspcnt, [], 2);
 end
 
 m = mean(tspcnt)/bs;
