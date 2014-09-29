@@ -28,12 +28,13 @@ if nargin < 2 || isempty(level)
 	end
 end
 
-switch inference.nafc
-    case 2
-        x = linspace(0,1,100);
-    case 1
-        x = linspace(min(inference.data(:,1)), max(inference.data(:,1)), 100);
-end
+% switch inference.nafc
+%     case 2
+%         x = linspace(0,1,100);
+%     case 1
+% NOT HAPPY WITH THIS ... needs work
+        x = linspace(min(inference.data(:,1)), max(inference.data(:,1))*10, 1000);
+% end
 
 
 % % Diagnostics of the point estimate
