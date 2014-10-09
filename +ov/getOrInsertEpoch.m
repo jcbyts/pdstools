@@ -23,9 +23,9 @@ function epoch = getOrInsertEpoch(experiment, protocol, plxfile, dv, Timezone)
 import ov.*
 
 if ~isa(experiment, 'us.physion.ovation.domain.concrete.Experiment')
-	fprintf(['\r\r*****************************************************************\r' ...
-		'*****************************************************************\r\r\r']);
-	fprintf('You need to pass in an ovation Experiment object as the first argument.\rYou passed in a %s object\r\r', class(experiment))
+	fprintf(['\n\n*****************************************************************\n' ...
+		'*****************************************************************\n\n\n']);
+	fprintf('You need to pass in an ovation Experiment object as the first argument.\nYou passed in a %s object\n\n', class(experiment))
 	if isa(experiment, 'us.physion.ovation.api.StdDataContext')
 		experiment = ov.getExperiment(experiment, [], []);
 	elseif isa(experiment, 'us.physion.ovation.domain.concrete.Project')
@@ -80,9 +80,9 @@ for ii = 1:nEpochs
 end
 
 if nargin == 1
-	fprintf('found %d epochs\r', nEpochs)
+	fprintf('found %d epochs\n', nEpochs)
 	for ii = 1:nEpochs
-		fprintf('%s\r', epochnames{ii})
+		fprintf('%s\n', epochnames{ii})
 	end
 	epoch = epochs;
 	return

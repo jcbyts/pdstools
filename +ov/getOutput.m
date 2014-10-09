@@ -5,7 +5,7 @@ function arOutput = getOutput(analysisRecord, outputName)
 import ov.*
 
 if ~isa(analysisRecord, 'us.physion.ovation.domain.concrete.AnalysisRecord')
-	fprintf('first argument must be an ovation analysis record object\r')
+	fprintf('first argument must be an ovation analysis record object\n')
 	help getOutput
 	return
 end
@@ -20,9 +20,9 @@ end
 outputNames = fieldnames(outputs);
 nOutputs = numel(outputNames);
 if nargin < 2 || isempty(outputName)
-    fprintf('found %d outputs\r', nOutputs)
+    fprintf('found %d outputs\n', nOutputs)
     for ii = 1:nOutputs
-        fprintf('%d. %s\r', ii, outputNames{ii})
+        fprintf('%d. %s\n', ii, outputNames{ii})
     end
     arOutput = outputs;
     return

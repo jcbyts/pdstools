@@ -53,7 +53,7 @@ an_info.channels    = [pl.ContinuousChannels(analogChannels).Channel];
 try 
 	an_data = [pl.ContinuousChannels(analogChannels).Values];
 catch me
-	fprintf('failed to concatenate. proceeding the slow way\r')
+	fprintf('failed to concatenate. proceeding the slow way\n')
 	nChannels = numel(analogChannels);
 	fragSize = zeros(nChannels,1);
 	for ii = 1:nChannels

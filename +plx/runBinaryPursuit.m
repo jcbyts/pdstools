@@ -23,17 +23,17 @@ if ~isfield(info, 'binaryPursuitChannels') && info.trodalness == 1
     possibleChannels = unique(ChannelsWithIsolatedUnits);
     info.binaryPursuitChannels = possibleChannels(sum(bsxfun(@eq, possibleChannels, ChannelsWithIsolatedUnits'))>=2);
     if isempty(info.binaryPursuitChannels)
-        fprintf('no channels are eligible for binary pursuit algorithm.\rThere must be more that one unit with an spikes.snr > 4 on a single channel to run binary pursuit\r') 
+        fprintf('no channels are eligible for binary pursuit algorithm.\nThere must be more that one unit with an spikes.snr > 4 on a single channel to run binary pursuit\n') 
         info = rmfield(info, 'binaryPursuitChannels');
         bpspikes = spikes;
         return
     else
-%         yn = input(sprintf('found %d channel(s) eligible for binary pursuit.\rDo you want to run it now (it takes ~1hr per channel)? (y/n)', numel(info.binaryPursuitChannels)), 's');
+%         yn = input(sprintf('found %d channel(s) eligible for binary pursuit.\nDo you want to run it now (it takes ~1hr per channel)? (y/n)', numel(info.binaryPursuitChannels)), 's');
 %         if ~strcmp(yn, 'y')
-%             fprintf('skipping binary pursuit\r')
+%             fprintf('skipping binary pursuit\n')
 %             info = rmfield(info, 'binaryPursuitChannels');
 %         else
-            fprintf('running binary pursuit. prepare to wait.\r')
+            fprintf('running binary pursuit. prepare to wait.\n')
 %         end
     end
 end
@@ -147,12 +147,12 @@ if isfield(info, 'binaryPursuitChannels') && ~isempty(info.binaryPursuitChannels
             nNeurons = size(finalSpikeTimes,2);
             % remove short ISI spikes (these can be an artifact of binary
             % pursuit)
-            fprintf('Checking for short inter-spike-intervals.\rThese are artifacts of the binary pursuit algorithm and will be removed\r...\r')
+            fprintf('Checking for short inter-spike-intervals.\nThese are artifacts of the binary pursuit algorithm and will be removed\n...\n')
             for iNeuron = 1:nNeurons
                 spikeSampleTime = find(tmpFinalSpikeTimes(:,iNeuron));
                 spikeIsis = diff(spikeSampleTime)/info.sampling_rate/2;
                 shortIsis = find(spikeIsis<800e-6); % spikes less than 800 microseconds
-                fprintf('neuron %d had %d short Isis\r', iNeuron, length(shortIsis))
+                fprintf('neuron %d had %d short Isis\n', iNeuron, length(shortIsis))
                 spikesToRemove = spikeSampleTime(shortIsis);
                 tmpFinalSpikeTimes(spikesToRemove,iNeuron) = 0;
             end

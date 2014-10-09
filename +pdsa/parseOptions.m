@@ -26,6 +26,6 @@ for ii = 1:numel(existingOptions)
 	if any(cellfun(@(x) strcmp(x, existingOptions{ii}), requiredOptions, 'UniformOutput', true))
 		defaults.(existingOptions{ii}) = opts.(existingOptions{ii});
 	elseif ~nowarning
-		warning(sprintf('%s is not an option I know\r', existingOptions{ii}))
+		warning(sprintf('%s is not an option I know\n', existingOptions{ii}))
 	end
 end

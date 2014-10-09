@@ -18,7 +18,7 @@ if nargin < 2 || isempty(pl)
 		pl = ovation.datapath(meas);
 	elseif nMeas > 1
 		for ii = 1:nMeas
-			fprintf('%d) %s\r', ii, char(meas(ii).getName))
+			fprintf('%d) %s\n', ii, char(meas(ii).getName))
 		end
 		mi = input('which plx file did you want to load?'  );
 		pl = ovation.datapath(meas(mi));
@@ -30,10 +30,10 @@ end
 
 if isstr(pl)
 	if exist(pl, 'file')
-		fprintf('reading in plexon file\r')
+		fprintf('reading in plexon file\n')
 		pl   = readPLXFileC(pl, 'all');
 	else
-		fprintf('fail\r')
+		fprintf('fail\n')
 		return
 	end
 end
@@ -87,11 +87,11 @@ if isempty(ov.getOutput(rawPLX, 'continuous')) && exist('an_info', 'var')
 	fname = [char(epoch.getExperiment.getPurpose) '_continuous.mat'];
 	fname = fullfile(pwd, 'tmp', fname);
 	save(fname, 'an_info', 'an_data', '-v7.3')
-    fprintf('adding continuous data\r')
+    fprintf('adding continuous data\n')
 	addOutput(rawPLX, fname, 'continuous')
 	delete(fname)
 	rmdir('tmp')
-    fprintf('Done\r')
+    fprintf('Done\n')
 end
 
 if isempty(ov.getOutput(rawPLX, 'lfp')) && exist('lfp_info', 'var')
@@ -99,11 +99,11 @@ if isempty(ov.getOutput(rawPLX, 'lfp')) && exist('lfp_info', 'var')
 	fname = [char(epoch.getExperiment.getPurpose) '_lfp.mat'];
 	fname = fullfile(pwd, 'tmp', fname);
 	save(fname, 'lfp_info', 'lfp_data', '-v7.3')
-    fprintf('adding lfp data\r')
+    fprintf('adding lfp data\n')
 	addOutput(rawPLX, fname, 'lfp')
 	delete(fname)
 	rmdir('tmp')
-    fprintf('Done\r')
+    fprintf('Done\n')
 end
 
 if isempty(ov.getOutput(rawPLX, 'events'))
@@ -111,21 +111,21 @@ if isempty(ov.getOutput(rawPLX, 'events'))
 	fname = [char(epoch.getExperiment.getPurpose) '_events.mat'];
 	fname = fullfile(pwd, 'tmp', fname);
 	save(fname, 'events', 'strobed', 'info')
-    fprintf('adding event data\r')
+    fprintf('adding event data\n')
 	addOutput(rawPLX, fname, 'events')
 	delete(fname)
 	rmdir('tmp')
-    fprintf('Done\r')
+    fprintf('Done\n')
 end
 
 if isempty(ov.getOutput(rawPLX, 'spikes'))
 	mkdir('tmp')
 	fname = [char(epoch.getExperiment.getPurpose) '_spikes.mat'];
 	fname = fullfile(pwd, 'tmp', fname);
-    fprintf('adding spike data\r')
+    fprintf('adding spike data\n')
 	save(fname, 'spikes')
 	addOutput(rawPLX, fname, 'spikes')
 	delete(fname)
 	rmdir('tmp')
-    fprintf('Done\r')
+    fprintf('Done\n')
 end

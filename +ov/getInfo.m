@@ -92,9 +92,9 @@ if nParam > 0
 	end
 	
 	nParams = numel(params);
-	fprintf('Experiment: %s has %d protocol parameters\r', exname, nParams)
+	fprintf('Experiment: %s has %d protocol parameters\n', exname, nParams)
 	for ii = 1:nParams
-		fprintf('%d)%s\r',ii,params{ii})
+		fprintf('%d)%s\n',ii,params{ii})
 	end
 	
 end
@@ -102,7 +102,7 @@ end
 param = ovation.map2struct(experiment.getProtocolParameters());
 params = fieldnames(param);
 nParams = numel(params);
-fprintf('Found %d protocol parameters\r', nParams)
+fprintf('Found %d protocol parameters\n', nParams)
 for ii = 1:nParams
 	if isa(param.(params{ii}), 'java.lang.String[]')
 		nP = numel(param.(params{ii}));
@@ -124,6 +124,6 @@ end
 
 
 if isempty(params)
-	fprintf('params are still empty\r')
+	fprintf('params are still empty\n')
 	return
 end

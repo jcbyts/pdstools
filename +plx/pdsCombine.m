@@ -65,7 +65,7 @@ spikes = assignTrialSpikes(spikes, start, stop);
 % find LFP channels
 savename = fullfile(saveDir, [fname '_lfp.mat']);
 if exist(savename, 'file')
-    fprintf('LFP file already exists. Skipping\r\r\r\r')
+    fprintf('LFP file already exists. Skipping\n\n\n\n')
 else
     [~, adfreq] = plx_adchan_freqs(plxname);
     [~, adc]    = plx_ad_chanmap(plxname);
@@ -77,7 +77,7 @@ else
     
     lfp_info.trial_start = convertTimeToSamples(start, lfp_info.adfreq, lfp_info.timestamps, lfp_info.fragsamples);
     lfp_info.trial_stop  = convertTimeToSamples(stop,  lfp_info.adfreq, lfp_info.timestamps, lfp_info.fragsamples);
-    fprintf('saving LFP data\r')
+    fprintf('saving LFP data\n')
     save(savename, 'lfp_info', 'lfp_data', '-v7.3')
 end
 
@@ -92,7 +92,7 @@ if useContinuousOnly
         grd = greeds(gg);
         savename = fullfile(saveDir, [fname sprintf('_bp%04.0fspikes.mat', 1/grd)]);
         if exist(savename, 'file')
-            fprintf('Binary Pursuit with greed %d already exists. Skipping...\r\r\r\r', 1/grd)
+            fprintf('Binary Pursuit with greed %d already exists. Skipping...\n\n\n\n', 1/grd)
         else
             spikes = plx_runBinaryPursuit(plxname, spikes0, info, grd, saveDir);
             save(savename, 'spikes', '-v7.3')
@@ -104,7 +104,7 @@ end
 % find Raw channels
 savename = fullfile(saveDir, [fname '_analog.mat']);
 if exist(savename, 'file')
-    fprintf('Raw file already exists. Skipping\r')
+    fprintf('Raw file already exists. Skipping\n')
 else
     [~, adfreq] = plx_adchan_freqs(plxname);
     [~, adc]    = plx_ad_chanmap(plxname);
@@ -117,7 +117,7 @@ else
     an_info.trial_start = convertTimeToSamples(start, an_info.adfreq, an_info.timestamps, an_info.fragsamples);
     an_info.trial_stop  = convertTimeToSamples(stop,  an_info.adfreq, an_info.timestamps, an_info.fragsamples);
     
-    fprintf('saving raw analog data\r')
+    fprintf('saving raw analog data\n')
     save(savename, 'an_info', 'an_data', '-v7.3')
 end
 

@@ -33,9 +33,9 @@ nMeasurements = numel(measurements);
 if isempty(files)
 if isempty(tag)
 	measurement = measurements;
-	fprintf('found %d measurements\r', nMeasurements)
+	fprintf('found %d measurements\n', nMeasurements)
 	for ii = 1:nMeasurements
-		fprintf('%d) %s\r', ii, char(measurements(ii).getName))
+		fprintf('%d) %s\n', ii, char(measurements(ii).getName))
 	end
 	return
 elseif isnumeric(tag) && tag <= nMeasurements
@@ -49,7 +49,7 @@ elseif ischar(tag)
 			measBool(ii) = true;
 		end
 	end		
-	fprintf('found %d measurements that match %s\r', sum(measBool), tag)
+	fprintf('found %d measurements that match %s\n', sum(measBool), tag)
 	measurement = measurements(measBool);
 	return
 

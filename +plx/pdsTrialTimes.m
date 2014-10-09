@@ -8,7 +8,7 @@ if isstruct(PDSname)
 else
     PDS = [];
     % load PDS file
-    fprintf('Loading PDS file\r%s\r', PDSname)
+    fprintf('Loading PDS file\n%s\n', PDSname)
     evalc('load(PDSname, ''-mat'')'); % load PDS file (name entered at top of the file)
 end
 
@@ -41,10 +41,10 @@ stoffset = events.time-strobed.times(plxstart);
 [~, id] = min(abs(stoffset));
 trialStartId = events.id(id);
 trialStartEventName = events.name{trialStartId};
-fprintf('Bit ''%s'' was flipped %d ms from the first strobe. Using that to align trial times\r', trialStartEventName, round(1e3*stoffset(id)))
+fprintf('Bit ''%s'' was flipped %d ms from the first strobe. Using that to align trial times\n', trialStartEventName, round(1e3*stoffset(id)))
 trialStarts = events.time(events.id==trialStartId);
 if ~isfield(PDS, 'timing') || ~isfield(PDS.timing, 'syncTimeDuration') || stoffset(id) > PDS.timing.syncTimeDuration(1) 
-    fprintf('something is wrong with your bit flip timing. Using strobe times instead. These are less precise.\r')
+    fprintf('something is wrong with your bit flip timing. Using strobe times instead. These are less precise.\n')
     trialStarts = strobed.times;
 end
 
