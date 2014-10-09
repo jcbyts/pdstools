@@ -32,7 +32,7 @@ if ~all(wf==wf(1))
         for jj = 1:nw
             spikeStructs{ii}.waveform(jj,:) = interp(spikeStructs{ii}.waveform_old(jj,:), nwf/nws);
         end
-        fprintf('%2.0f done\r', ii/nSpikeStructs*100)
+        fprintf('%2.0f done\n', ii/nSpikeStructs*100)
     end
 end
 
@@ -83,12 +83,12 @@ for ii = 1:nSpikeStructs
 end
 
 
-fprintf('************************************************\r')
-fprintf('found %d spike files with %d neurons\r', nSpikeStructs, max(n))
+fprintf('************************************************\n')
+fprintf('found %d spike files with %d neurons\n', nSpikeStructs, max(n))
 for ii = 1:nSpikeStructs
-	fprintf('spike%d:\r', ii)
+	fprintf('spike%d:\n', ii)
 	for jj = 1:n(ii)
-		fprintf('\tneuron %02.0f, id %02.0f, ch: %d, snr %2.2f\r', jj, list{ii}(jj), spikeStructs{ii}.channel(jj), spikeStructs{ii}.snr(jj))
+		fprintf('\tneuron %02.0f, id %02.0f, ch: %d, snr %2.2f\n', jj, list{ii}(jj), spikeStructs{ii}.channel(jj), spikeStructs{ii}.snr(jj))
 	end
 end
 
@@ -99,7 +99,7 @@ end
 figure(100); clf
 set(gca, 'Color', 'w')
 for ii = 1:nSpikeStructs
-	fprintf('spike %d:\t %d neurons\r', ii, n(ii))
+	fprintf('spike %d:\t %d neurons\n', ii, n(ii))
 	% figure(100+ii); clf
 	subplot(1,nSpikeStructs, ii)
     
@@ -208,7 +208,7 @@ end
 figure(100); clf
 set(gca, 'Color', 'w')
 for ii = 1:nSpikeStructs
-	fprintf('spike %d:\t %d neurons\r', ii, n(ii))
+	fprintf('spike %d:\t %d neurons\n', ii, n(ii))
 	% figure(100+ii); clf
 	subplot(1,nSpikeStructs, ii)
 	% mean waveforms shifted by unit #
@@ -256,7 +256,7 @@ end
 for ii = 1:nSpikeStructs
     spikeStructsNew{ii} = spikesNew(ii);
 end
-fprintf('\r\r\r\r')
+fprintf('\n\n\n\n')
 
 % % good = input('is it good?');
 % % if good
@@ -411,7 +411,7 @@ fprintf('\r\r\r\r')
 % figure(100); clf
 % set(gca, 'Color', 'w')
 % for ii = 1:nSpikeStructs
-% 	fprintf('spike %d:\t %d neurons\r')
+% 	fprintf('spike %d:\t %d neurons\n')
 % 	% figure(100+ii); clf
 % 	subplot(1,nSpikeStructs, ii)
 % 	% mean waveforms shifted by unit #

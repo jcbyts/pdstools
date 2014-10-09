@@ -23,14 +23,14 @@ nAnRecs = numel(anRecs);
 
 if nAnRecs == 0
 	analysisRecord = [];
-	fprintf('there are no analysis records for this epoch\r')
+	fprintf('there are no analysis records for this epoch\n')
 	return
 end
 
 if nargin < 2 || isempty(analysisRecordName)
-	fprintf('found %d analysis records.\r', nAnRecs)
+	fprintf('found %d analysis records.\n', nAnRecs)
 	for ii = 1:nAnRecs
-		fprintf('%d. %s\r', ii, char(anRecs(ii).getName()))
+		fprintf('%d. %s\n', ii, char(anRecs(ii).getName()))
 	end
 	analysisRecord = anRecs;
 	return
@@ -38,7 +38,7 @@ end
 
 if isnumeric(analysisRecordName) && analysisRecordName<=nAnRecs
 	analysisRecord = anRecs(analysisRecordName);
-	fprintf('returning analysis record: %s\r', char(analysisRecord.getName))
+	fprintf('returning analysis record: %s\n', char(analysisRecord.getName))
 	return
 end
 

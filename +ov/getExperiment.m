@@ -64,8 +64,8 @@ else
 	end
 
 	if isempty(projname)
-		fprintf('Found %d Projects:\r', nProjects)
-		fprintf('%s\r', projnames{:})
+		fprintf('Found %d Projects:\n', nProjects)
+		fprintf('%s\n', projnames{:})
 		projid = [];
 	else
 		projid = find(cellfun(@(x) strcmp(x, projname), projnames));
@@ -83,17 +83,17 @@ if isempty(projid)
 	ctr = 1;
 	for ii = 1:nProjects
 		experiments = ovation.asarray(proj(ii).getExperiments());
-		fprintf('Project: %s has %d experiments:\r', projnames{ii}, nExperiments(ii))
+		fprintf('Project: %s has %d experiments:\n', projnames{ii}, nExperiments(ii))
 		for jj = 1:nExperiments(ii)
 			exnames{ctr} = char(experiments(jj).getPurpose);
-			fprintf('%d)\t%s\r', jj,exnames{ctr});
+			fprintf('%d)\t%s\n', jj,exnames{ctr});
 			ctr = ctr + 1;
 		end
 	end
 	
 	return
 else
-	fprintf('found project %s.\r', projname)
+	fprintf('found project %s.\n', projname)
 	experiments = ovation.asarray(proj(projid).getExperiments());
 	nExperiments = numel(experiments);
 	exnames = cell(nExperiments,1);
@@ -104,9 +104,9 @@ end
 
 
 if isempty(exname) && ~isempty(projname)
-	fprintf('Project: %s has %d experiments:\r', projname, nExperiments)
+	fprintf('Project: %s has %d experiments:\n', projname, nExperiments)
 	for ii = 1:nExperiments
-		fprintf('%d)\t%s\r', ii,exnames{ii})
+		fprintf('%d)\t%s\n', ii,exnames{ii})
 	end
 	experiment = proj(projid);
 	return
@@ -114,11 +114,11 @@ else
 	exid = find(cellfun(@(x) strcmp(x, exname), exnames));
 	if isempty(exid)
 		experiment = proj(projid);
-		fprintf('no experiments found matching name: %s\r', exname)
+		fprintf('no experiments found matching name: %s\n', exname)
 		if exist('startDate', 'var') && isa(startDate, 'org.joda.time.DateTime')
-			fprintf(['\r\r*****************************************************************\r' ...
-			'*****************************************************************\r\r\r']);
-			fprintf('startDate object was passed in...\rAdding experiment %s now\r', exname)
+			fprintf(['\n\n*****************************************************************\n' ...
+			'*****************************************************************\n\n\n']);
+			fprintf('startDate object was passed in...\nAdding experiment %s now\n', exname)
 			project = proj(projid);
 			experiment = project.insertExperiment(exname, startDate);
 		end
