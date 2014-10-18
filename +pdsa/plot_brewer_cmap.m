@@ -6,8 +6,13 @@
 % Date: 14.10.2011
 import pdsa.*
 
-
-load('colorbrewer.mat')
+P = mfilename('fullpath');
+p = fileparts(P);
+% ii = strfind(p, '/');
+% p(ii(end):end) = [];
+% addpath(p)
+load(fullfile(p, 'colorbrewer.mat'))
+% load('colorbrewer.mat')
 
 ctypes={'div', 'seq', 'qual', 'jake'};
 ctypes_title={'Diverging', 'Sequential', 'Qualitative', 'jake'};

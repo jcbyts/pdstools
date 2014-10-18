@@ -41,7 +41,15 @@ function [colormap]=cbrewer(ctype, cname, ncol, interp_method)
 % JLY totally changed color data
 
 % load colorbrewer data
-load('colorbrewer.mat')
+
+import pdsa.*
+
+P = mfilename('fullpath');
+p = fileparts(P);
+% ii = strfind(p, '/');
+% p(ii(end):end) = [];
+% addpath(p)
+load(fullfile(p, 'colorbrewer.mat'))
 % initialise the colormap is there are any problems
 colormap=[];
 if (~exist('interp_method', 'var'))
