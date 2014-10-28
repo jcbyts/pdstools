@@ -33,21 +33,24 @@ end
 %% make spikes struct
 % this will be different for each rig. I want to find a nice way to handle it, but we
 % don't currently have one. It might hav eto be a manual option.
-switch pl.Version
-    case 107 % offline sorter
-        firstContinuousChannel = 64;
-    case 106
-        firstContinuousChannel = 64;
+if useContinuous
+    switch pl.Version
+        case 107 % offline sorter
+            firstContinuousChannel = 64;
+        case 106
+            firstContinuousChannel = 64;
 
-    otherwise
-
+        otherwise
+    end
+else
+    firstContinuousChannel = 0;
 end
 spikeChannels    = [pl.SpikeChannels(:).Channel]';
 nUnitsPerChannel = [pl.SpikeChannels(:).NUnits]';
 
 channelsWithUnits = find(spikeChannels>firstContinuousChannel & nUnitsPerChannel);
 nChannels = numel(channelsWithUnits);
-spikeCtr = 0;
+spikeCtr = 1;
 spikes = struct();
 spikes.time     = [];
 spikes.id       = [];
