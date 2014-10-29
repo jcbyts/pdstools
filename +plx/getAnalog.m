@@ -44,10 +44,11 @@ end
 
 an_info.adfreq    = pl.ContinuousChannels(analogChannels(1)).ADFrequency;
 an_info.nsamples = sum(pl.ContinuousChannels(analogChannels(1)).Fragments);
-an_info.timestamps  = double(pl.ContinuousChannels(analogChannels(1)).Timestamps)/pl.ContinuousChannels(analogChannels(1)).ADFrequency;
+an_info.timestamps  = double(pl.ContinuousChannels(analogChannels(1)).Timestamps)/pl.ADFrequency; %pl.ContinuousChannels(analogChannels(1)).ADFrequency;
 an_info.fragsamples = double(pl.ContinuousChannels(analogChannels(1)).Fragments);
 an_info.channels    = [pl.ContinuousChannels(analogChannels).Channel];
-
+an_info.adgain      = [pl.ContinuousChannels(analogChannels(analogChannels)).ADGain];
+an_info.preampgain  = [pl.ContinuousChannels(analogChannels(analogChannels)).PreAmpGain];
 
 
 try 
