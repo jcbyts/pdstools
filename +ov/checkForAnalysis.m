@@ -48,7 +48,8 @@ nResults = numel(results);
 for ii = 1:nResults
     obj = results(ii);
     if (~isempty(obj) && strcmp(char(obj.getClass().getSimpleName()), 'AnalysisRecord'))
-        if(strcmp(char(obj.getProtocol().getName()), protocolName))
+        prot = obj.getProtocol();
+        if(~isempty(prot) && strcmp(char(prot.getName()), protocolName))
             if(obj.getParent().equals(project))
                 disp('Found it!');
                 analysisRecord = obj;
