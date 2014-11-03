@@ -74,7 +74,7 @@ for ii = 1:nEvents
             tmpcnt4 = tmpcnt4 + numel(st4);
             % differences between each spike time
             d = bsxfun(@minus, repmat(st1(:), 1, numel(st4)), st4(:)');
-            a = histc(d(:), be); h = h + a;
+            a = histc(d(:), be); h = h(:) + a(:);
         end
         xcshuffle(ii,:) = h(1:end-1)/shuf;
         tspcnt3(ii) =  tmpcnt3/shuf;

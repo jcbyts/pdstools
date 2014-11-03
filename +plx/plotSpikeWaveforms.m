@@ -19,7 +19,9 @@ if ~exist('Chans', 'var')
     Chans = 1:max(spikes.channel);
 end
 
-nUnits = numel(spikes.snr);
+% nUnits = numel(spikes.snr);
+% nUnits = sum(sum(bsxfun(@eq, spikes.channel, Chans'),1)>0);
+nUnits = sum(spikes.snr(sum(bsxfun(@eq, spikes.channel, Chans'),1)>0)>SNRthresh);
 cmap = hsv(nUnits);
 
 hold all
