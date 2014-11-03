@@ -20,7 +20,7 @@ cnames{1,:}={'BrBG', 'PiYG', 'PRGn', 'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn'}
 cnames{2,:}={'Blues','BuGn','BuPu','GnBu','Greens','Greys','Oranges','OrRd','PuBu','PuBuGn','PuRd',...
              'Purples','RdPu', 'Reds', 'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd'};
 cnames{3,:}={'Accent', 'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'};
-cnames{4,:}={'grays', 'blues', 'greens', 'reds', 'rdbu', 'cat', 'ltgrn', 'ltblu', 'grn2', 'bl2'}; %, 'bugu'};
+cnames{4,:}={'grays', 'blues', 'greens', 'reds', 'rdbu', 'cat', 'ltgrn', 'ltblu', 'grn2', 'bl2', 'pugu'}; %, 'bugu'};
 figure('position', [314 327 807 420])
 for itype=1:4
     
