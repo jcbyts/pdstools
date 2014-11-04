@@ -40,13 +40,13 @@ for ii = 1:numel(channels)
             co = .5*[1 1 1];
         else
             co = cmap(k,:);
+            k = k+1;
         end
             Unit = find(spikes.id==id);
             n = numel(Unit);
             s = ceil(n/100);
             wave = spikes.waveform(Unit(1:s:end),:)./abs(min(min(spikes.waveform(Unit(1:s:end),:))));
             plot(1:nSamples, wave-2*channels(ii), 'Color', co);
-            k = k+1;
     end
 end
 

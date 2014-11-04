@@ -43,10 +43,13 @@ if useContinuous
         otherwise
     end
 else
-    firstContinuousChannel = 0;
+    firstContinuousChannel = -1;
 end
 spikeChannels    = [pl.SpikeChannels(:).Channel]';
-nUnitsPerChannel = [pl.SpikeChannels(:).NUnits]';
+nUnitsPerChannel = zeros(numel(spikeChannels), 1);
+for ii = 1:numel(spikeChannels)
+    nUnitsPerChannel(ii) = numel(unique(pl.SpikeChannels(ii).Units));
+end
 
 channelsWithUnits = find(spikeChannels>firstContinuousChannel & nUnitsPerChannel);
 nChannels = numel(channelsWithUnits);
@@ -61,8 +64,10 @@ for ii = 1:nChannels
     spikes.time = [spikes.time; double(pl.SpikeChannels(channelsWithUnits(ii)).Timestamps)/pl.ADFrequency];
     spikes.id   = [spikes.id; ones(numel(pl.SpikeChannels(channelsWithUnits(ii)).Timestamps),1).*double(pl.SpikeChannels(channelsWithUnits(ii)).Units(:)+spikeCtr)];
     spikes.waveform = [spikes.waveform; double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)'];
-    spikes.channel  = [spikes.channel repmat(pl.SpikeChannels(channelsWithUnits(ii)).Channel, 1, pl.SpikeChannels(channelsWithUnits(ii)).NUnits)];
-    spikeCtr = spikeCtr + pl.SpikeChannels(channelsWithUnits(ii)).NUnits;
+%     spikes.channel  = [spikes.channel repmat(pl.SpikeChannels(channelsWithUnits(ii)).Channel, 1, pl.SpikeChannels(channelsWithUnits(ii)).NUnits)];
+    spikes.channel  = [spikes.channel repmat(pl.SpikeChannels(channelsWithUnits(ii)).Channel, 1, nUnitsPerChannel(channelsWithUnits(ii)))];
+%     spikeCtr = spikeCtr + pl.SpikeChannels(channelsWithUnits(ii)).NUnits;
+     spikeCtr = spikeCtr + nUnitsPerChannel(channelsWithUnits(ii));
 end
 
 [spikes.time, ord] = sort(spikes.time);
