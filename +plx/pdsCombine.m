@@ -1,6 +1,6 @@
-function plx_pdsCombine(plxname, pdsname, info, verbose, useContinuousOnly)
-% plx_pdsCombine(plxname, pdsname, info, verbose, useContinuousOnly)
-
+function pdsCombine(plxname, pdsname, info, verbose, useContinuousOnly)
+% pdsCombine(plxname, pdsname, info, verbose, useContinuousOnly)
+% DEPRECIATED??
 
 if nargin < 5
     useContinuousOnly = 0;

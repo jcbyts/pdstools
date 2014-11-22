@@ -1,6 +1,6 @@
 function spikes = getSpikes(pl, verbose, useContinuous)
+% Get spike times and waveforms from plstruct 
 % spikes = getSpikes(plstruct, verbose, useContinuousOnly)
-% get spike times and waveforms from plstruct
 % inputs:
 %   plstruct    [struct] - output of readPLXFileC(plxname, 'all')
 %   verbose     [0 or 1] - plot stuff if 1

@@ -1,5 +1,6 @@
 function [an_info, an_data] = getAnalog(pl, analogChannels)
-%[an_info, an_data] = getAnalog(plstruct, analogChannels)
+% Get analog data from .plx file for specific channels 
+% [an_info, an_data] = getAnalog(plstruct, analogChannels)
 % inputs:
 %   plstruct 	[struct] - fullread output of readPLXc
 %   channels    [double] - vector of channels to read.

@@ -1,5 +1,6 @@
 function [spikes, h] = stableSpikeRange(spikes, getInput)
 % find range with stable recordings
+% [spikes, h] = stableSpikeRange(spikes, getInput)
 
 if nargin < 2
     getInput = false;

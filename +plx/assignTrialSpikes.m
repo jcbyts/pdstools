@@ -1,4 +1,5 @@
 function spikes = assignTrialSpikes(spikes, start, stop)
+% Assign trial to spikes (depreciated)
 % spikes = assignTrialSpikes(spikes, start, stop)
 % inputs:
 %   spikes [struct] - output from pls_getSpikes

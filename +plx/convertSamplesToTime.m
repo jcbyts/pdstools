@@ -1,6 +1,6 @@
 function times = convertSamplesToTime(samples, adfreq, ts, fn)
+% Convert samples into timestamps using sampling rate and start-time
 % times = convertSamplesToTime(samples, adfreq, ts, fn)
-% convert timestampls into samples
 % inputs:
 %  samples [n x 1] - vector of sample indices
 %  adfreq  [1 x 1] - sampling rate

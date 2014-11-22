@@ -1,7 +1,7 @@
 function importPLXEvents(epoch, pl)
 % import plexon events and strobed into ovation analysis record
 % importPLXEvents(epoch, pl)
-
+% This needs serious documentation work
 import ov.*
 import plx.*
 import pdsa.*

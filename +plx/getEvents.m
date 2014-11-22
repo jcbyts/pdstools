@@ -1,6 +1,6 @@
 function [events, strobed] = getEvents(pl, info, verbose)
-% [events, strobed, info] = getEvents(plstruct, info, verbose)
 % Get strobe and event timestamps from *.plx file
+% [events, strobed, info] = getEvents(plstruct, info, verbose)
 % inputs:
 %    plstruct   [struct] - output of readPLX
 %       
