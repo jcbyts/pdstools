@@ -1,5 +1,5 @@
 function [spikeStructs, spikeStructsNew] = concatenateSpikes(varargin)
-% concatenate two spike time structures
+% Concatenate two spike time structures
 % example call:
 % 	spikesNew = concatenateSpikes(spikes1, spikes2)
 % INPUTS:
@@ -10,6 +10,7 @@ function [spikeStructs, spikeStructsNew] = concatenateSpikes(varargin)
 % 		.channel
 % 		.snr
 % 		.first_continuous_channel
+
 spikeStructs = varargin(:); % leave while debugging
 spikeStructsNew = spikeStructs;
 nSpikeStructs = numel(spikeStructs);

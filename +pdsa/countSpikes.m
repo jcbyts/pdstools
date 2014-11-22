@@ -1,6 +1,6 @@
 function [v, id, dt] = countSpikes(sptimes, ev1, ev2)
+% Count spikes between two events
 % v = countSpikes(sptimes, ev1, ev2)
-% count spikes between two events
 % input
 %       sptimes    [n x 1] - vector of spike times
 %       ev1        [m x 1] - vector of event times to start count

@@ -1,4 +1,6 @@
 function spikeStructs = shiftUnitIdentity(spikeStructs, structId, spikeId, newSpikeId)
+% Shift spike Unit id in a spikes struct
+% spikeStructs = shiftUnitIdentity(spikeStructs, structId, spikeId, newSpikeId)
 
 idx1 = spikeStructs{structId}.id == spikeId;
 if isnan(newSpikeId)

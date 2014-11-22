@@ -1,4 +1,5 @@
 function [x,y,m,s,bc] = plotRaster(sptimes, ev, win, bs, idx, plotit)
+% Get x and y coordinates for a spikes raster and plot it (optional)
 % [x,y,m,s,bc] = plotRaster(sptimes, ev, win, bs, idx, plotit)
 %   makes peri-stimulus-time-histogram (PSTH) aligned to stimulus events
 %   inputs

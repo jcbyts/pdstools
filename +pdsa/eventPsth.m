@@ -1,6 +1,6 @@
 function [m,s,bc,v, tspcnt] = eventPsth(sptimes, ev, win, bs, skern)
+% Make Peri-Stimulus-Time-Histogram (PSTH) aligned to stimulus events
 % [m, s, bc, v, tspcnt] = eventPsth(sptimes, ev, win, bs, skern)
-%   makes peri-stimulus-time-histogram (PSTH) aligned to stimulus events
 %   inputs
 %       sptimes [n x 1] - vector of spike times
 %       ev      [m x 1] - vector of event times

@@ -1,5 +1,4 @@
 function [a, d1, d2] = waveformMatch(x,y)
-%---------------------------------------------------------------------%
 % Waveform matching: from Tolias et al 2007
 % Use a multistep procedure to compare waveforms for each neuron.
 % I replaced their amplitude measure with the pearson's correlation 

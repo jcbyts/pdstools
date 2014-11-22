@@ -1,6 +1,6 @@
 function [xc, lags, r] = xcorrShuffle(sp1, sp2, ev, ml, win, bs, shuf)
+% Compute shuffle corrected cross-correlogram 
 % [xc, lags, r] = xcorrShuffle(sp1, sp2, ev, ml, win, bs, shuf)
-% Compute shuffle corrected cross-correlogram
 % inputs
 %       sp1     [n x 1] - vector of spike times for neuron 1
 %       sp2     [m x 1] - vector of spike times for neuron 2
