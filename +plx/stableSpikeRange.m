@@ -56,11 +56,17 @@ for ii = 1:nUnits
         meanRate(jj) = mean(spcnt(spanLocs==jj));
     end
     [~, id] = max(meanRate);
-    goodSpikes = find(spanLocs==id);
+    zcnt = zscore(spcnt);
+    goodZ = zcnt > -4 & zcnt < 4;
+    goodSpikes = find(spanLocs==id & goodZ);
+    
+    
 %     goodSpikes = find(spanLocs==1);
     plot(bins(goodSpikes), spcnt(goodSpikes), 'r.');
     if getInput
         tmp = input('enter spike range as a vector');
+    else
+        tmp = [];
     end
     if isempty(tmp) || ~(numel(tmp)==2)
         spikes.goodRange(units(ii),:) = [bins(goodSpikes(1)) bins(goodSpikes(end))];

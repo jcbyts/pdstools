@@ -1,6 +1,9 @@
-function [plxtrialstart, plxtrialstop] = pdsTrialTimes(PDSname, strobed, events)
+function [plxtrialstart, plxtrialstop] = pdsTrialTimes(PDSname, strobed, events, useStrobe)
 % [plxtrialstart, plxtrialstop] = plx_pdsTrialTimes(PDSname, strobed, events)
 % get start and stop time for each pds trial in plexon time
+if ~exist('useStrobe', 'var')
+    useStrobe = false;
+end
 
 if isstruct(PDSname)
     PDS = PDSname;
@@ -34,20 +37,39 @@ fprintf('starting match from pds trial %0.0f, plx trial %0.0f \n', pdsstart, plx
 
 ntrials = min(plxend-plxstart,pdsend-pdsstart);
 
+%% find bit that is repeatedly flipped after strobe -- this is New and should be tested
+deltaTime = bsxfun(@minus, strobed.times, events.time');
+eventID = repmat(events.id', numel(strobed.times),1);
+
+% sort smallest to largest
+[val, ordered] = sort(deltaTime(:).^2);
+
+mostCommonEvent = mode(eventID(ordered(1:numel(strobed.times))));
+assert(numel(unique(eventID(ordered(1:numel(strobed.times))))) == 1, 'more than one event bit is flipped in close succession with the strobe time... what is up?')
+    
+
+
+
+%%
+
 % find trial start event
-stoffset = events.time-strobed.times(plxstart);
-% stoffset = events.time-strobed.times(3);
-% stoffset(stoffset < 0) = inf; % times before strobe don't count
-[~, id] = min(abs(stoffset));
-trialStartId = events.id(id);
-trialStartEventName = events.name{trialStartId};
-fprintf('Bit ''%s'' was flipped %d ms from the first strobe. Using that to align trial times\n', trialStartEventName, round(1e3*stoffset(id)))
+
+% stoffset = events.time-strobed.times(plxstart);
+% % stoffset = events.time-strobed.times(3);
+% % stoffset(stoffset < 0) = inf; % times before strobe don't count
+% [~, id] = min(abs(stoffset));
+% trialStartId = events.id(id);
+trialStartId = events.id(mostCommonEvent);
+trialStartEventName = events.name{mostCommonEvent};
+fprintf('Bit ''%s'' was flipped %d ms from the first strobe. Using that to align trial times\n', trialStartEventName, 1e3*mean(val(1:100)))
 trialStarts = events.time(events.id==trialStartId);
-if ~isfield(PDS, 'timing') || ~isfield(PDS.timing, 'syncTimeDuration') || stoffset(id) > PDS.timing.syncTimeDuration(1) 
-    fprintf('something is wrong with your bit flip timing. Using strobe times instead. These are less precise.\n')
+% if ~isfield(PDS, 'timing') || ~isfield(PDS.timing, 'syncTimeDuration') || stoffset(id) > PDS.timing.syncTimeDuration(1) 
+%     fprintf('something is wrong with your bit flip timing. Using strobe times instead. These are less precise.\n')
+%     trialStarts = strobed.times;
+% end
+if useStrobe
     trialStarts = strobed.times;
 end
-
 
 plxtr = plxstart;
 pdstr = pdsstart;
