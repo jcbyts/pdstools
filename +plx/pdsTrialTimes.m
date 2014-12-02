@@ -45,7 +45,7 @@ eventID = repmat(events.id', numel(strobed.times),1);
 [val, ordered] = sort(deltaTime(:).^2);
 
 mostCommonEvent = mode(eventID(ordered(1:numel(strobed.times))));
-assert(numel(unique(eventID(ordered(1:numel(strobed.times))))) == 1, 'more than one event bit is flipped in close succession with the strobe time... what is up?')
+% assert(numel(unique(eventID(ordered(1:numel(strobed.times))))) == 1, 'more than one event bit is flipped in close succession with the strobe time... what is up?')
     
 
 
