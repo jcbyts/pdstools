@@ -53,7 +53,7 @@ end
 
 channelsWithUnits = find(spikeChannels>firstContinuousChannel & nUnitsPerChannel);
 nChannels = numel(channelsWithUnits);
-spikeCtr = 1;
+spikeCtr = 0; % changed from 1 to 0... I believe we want to start with 0 because we add the unit number
 spikes = struct();
 spikes.time     = [];
 spikes.id       = [];
@@ -63,7 +63,20 @@ spikes.channel  = [];
 for ii = 1:nChannels
     spikes.time = [spikes.time; double(pl.SpikeChannels(channelsWithUnits(ii)).Timestamps)/pl.ADFrequency];
     spikes.id   = [spikes.id; ones(numel(pl.SpikeChannels(channelsWithUnits(ii)).Timestamps),1).*double(pl.SpikeChannels(channelsWithUnits(ii)).Units(:)+spikeCtr)];
-    spikes.waveform = [spikes.waveform; double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)'];
+    % convert spike waveforms to milliVolts
+
+    % check if spike comes from AD continuous channel or sig channel
+    SIG = pl.SpikeChannels(channelsWithUnits(ii)).SIGName;
+    if strfind(SIG, 'sig')
+        waves = (pl.SpikeMaxMagnitudeMV*double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)') / (2^(pl.BitsPerSpikeSample-1) * pl.SpikePreAmpGain * pl.SpikeChannels(channelsWithUnits(ii)).Gain);
+    elseif strfind(SIG, 'adc')
+        waves = (pl.ContMaxMagnitudeMV*double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)') / (2^(pl.BitsPerContSample-1) * pl.ContinuousChannels(channelsWithUnits(ii)).PreAmpGain * pl.ContinuousChannels(channelsWithUnits(ii)).ADGain);
+    else
+        error('channel type not recognized. Gains not set.')
+    end
+        
+    spikes.waveform = [spikes.waveform; waves];
+%     spikes.waveform = [spikes.waveform; double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)'];
 %     spikes.channel  = [spikes.channel repmat(pl.SpikeChannels(channelsWithUnits(ii)).Channel, 1, pl.SpikeChannels(channelsWithUnits(ii)).NUnits)];
     spikes.channel  = [spikes.channel repmat(pl.SpikeChannels(channelsWithUnits(ii)).Channel, 1, nUnitsPerChannel(channelsWithUnits(ii)))];
 %     spikeCtr = spikeCtr + pl.SpikeChannels(channelsWithUnits(ii)).NUnits;
@@ -73,7 +86,7 @@ end
 [spikes.time, ord] = sort(spikes.time);
 spikes.id          = spikes.id(ord);
 spikes.waveform    = spikes.waveform(ord,:);
-
+spikes.timeaxis    = ((1:pl.NumPointsWave) - pl.NumPointsPreThr)/pl.WaveformFreq;
 % calculate waveform SNR
 units  = unique(spikes.id);
 nUnits = numel(find(units>0));
@@ -97,10 +110,10 @@ if verbose
     for ii = 1:nUnits
         subplot(spn, spn, ii)
         idx = find(spikes.id==ii);
-        plot(spikes.waveform(idx(1:100:end),:)', 'Color', .5*[1 1 1]); hold on
-        plot(mean(spikes.waveform(idx, :)), 'k', 'Linewidth', 2); axis tight
-        xlabel('samples')
-        ylabel('micro volts?')
+        plot(spikes.timeaxis*1e3, spikes.waveform(idx(1:100:end),:)', 'Color', .5*[1 1 1]); hold on
+        plot(spikes.timeaxis*1e3, mean(spikes.waveform(idx, :)), 'k', 'Linewidth', 2); axis tight
+        xlabel('msec')
+        ylabel('mV')
         title(sprintf('un: %d, ch: %d, snr: %02.2f', ii, spikes.channel(ii), spikes.snr(ii)))
         
     end

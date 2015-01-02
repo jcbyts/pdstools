@@ -1,5 +1,5 @@
 function [an_info, an_data] = getAnalog(pl, analogChannels)
-% Get analog data from .plx file for specific channels 
+% Get analog data from .plx file for specific channels
 % [an_info, an_data] = getAnalog(plstruct, analogChannels)
 % inputs:
 %   plstruct 	[struct] - fullread output of readPLXc
@@ -31,39 +31,41 @@ end
 
 %--------------------------------------------------------------------------------------------%
 %% make analog struct: this part is tricky to make a memory efficient version
-
-
-
 analogSamplingRates  = [pl.ContinuousChannels(analogChannels).ADFrequency]';
 analogRates = unique(analogSamplingRates); % to sort into lfp and analog
 % if only one rate exists, only make the lfp struct
 nRates = numel(analogRates);
 if nRates > 1
-	fprintf('must only have one sampling rate across all the channels passed in')
-	return
+    fprintf('must only have one sampling rate across all the channels passed in')
+    return
 end
 
-an_info.adfreq    = pl.ContinuousChannels(analogChannels(1)).ADFrequency;
-an_info.nsamples = sum(pl.ContinuousChannels(analogChannels(1)).Fragments);
+an_info.adfreq      = pl.ContinuousChannels(analogChannels(1)).ADFrequency;
+an_info.nsamples    = sum(pl.ContinuousChannels(analogChannels(1)).Fragments);
 an_info.timestamps  = double(pl.ContinuousChannels(analogChannels(1)).Timestamps)/pl.ADFrequency; %pl.ContinuousChannels(analogChannels(1)).ADFrequency;
 an_info.fragsamples = double(pl.ContinuousChannels(analogChannels(1)).Fragments);
-an_info.channels    = [pl.ContinuousChannels(analogChannels).Channel];
-an_info.adgain      = [pl.ContinuousChannels(analogChannels(analogChannels)).ADGain];
-an_info.preampgain  = [pl.ContinuousChannels(analogChannels(analogChannels)).PreAmpGain];
+an_info.channels    = [pl.ContinuousChannels(analogChannels).Channel]+1; % convert from zero base
+an_info.adgain      = [pl.ContinuousChannels(analogChannels).ADGain];
+an_info.preampgain  = [pl.ContinuousChannels(analogChannels).PreAmpGain];
 
 
-try 
-	an_data = [pl.ContinuousChannels(analogChannels).Values];
-catch me
-	fprintf('failed to concatenate. proceeding the slow way\n')
-	nChannels = numel(analogChannels);
-	fragSize = zeros(nChannels,1);
-	for ii = 1:nChannels
-		fragSize(ii) = sum(pl.ContinuousChannels(ii).Fragments);
-	end
-	an_data = zeros(min(fragSize), nChannels, 'int16');
-	for ii = 1:nChannels
-		% an_data = [pl.ContinuousChannels(analogChannels).Values];
-		an_data(:,ii) = pl.ContinuousChannels(ii).Values(1:min(fragSize));
-	end
+fprintf('Converting analog data to millivolts\n')
+nChannels = numel(analogChannels);
+fragSize = zeros(nChannels,1);
+% sum all fragments for each channels to get the total number of
+% samples per channel
+for ii = 1:nChannels
+    fragSize(ii) = sum(pl.ContinuousChannels(analogChannels(ii)).Fragments);
 end
+% initialize data to double (we need it in this format later)
+an_data = zeros(min(fragSize), nChannels, 'double');
+for ii = 1:nChannels
+    fprintf('Channel %d of %d\n', ii, nChannels)
+    thisChannel = analogChannels(ii);
+    % convert values to milliVolts
+    an_data(:,ii) = (pl.ContMaxMagnitudeMV*double(pl.ContinuousChannels(thisChannel).Values(1:min(fragSize)))) ...
+        / (2^(pl.BitsPerContSample-1) * pl.ContinuousChannels(thisChannel).PreAmpGain * pl.ContinuousChannels(thisChannel).ADGain);
+end
+
+fprintf('Done\n')
+
