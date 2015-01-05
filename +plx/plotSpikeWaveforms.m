@@ -1,4 +1,4 @@
-function plotSpikeWaveforms(spikes, SNRthresh, Chans)
+function plotSpikeWaveforms(spikes, SNRthresh, Chans, MaxChannel)
 % plot spike waveforms by channel
 % plotSpikeWaveforms(spikes, SNRthresh, Chans)
 % Inputs:
@@ -9,13 +9,18 @@ function plotSpikeWaveforms(spikes, SNRthresh, Chans)
 %       .channel
 %   SNRthresh [1 x 1] - threshold for considering single units (default=3)
 %   Chans     [1 x m] - vector of channels to consider
+%   MaxChannel[1 x 1] - maximum channel on rig (loops channels above that)
 
 % plotSpikes
 if ~exist('SNRthresh', 'var')
     SNRthresh = 3;
 end
 
-if ~exist('Chans', 'var')
+if ~exist('MaxChannel', 'var')
+    MaxChannel = max(spikes.channel);
+end
+
+if ~exist('Chans', 'var') || isempty(Chans)
     Chans = 1:max(spikes.channel);
 end
 
@@ -24,8 +29,18 @@ end
 nUnits = sum(spikes.snr(sum(bsxfun(@eq, spikes.channel, Chans'),1)>0)>SNRthresh);
 cmap = hsv(nUnits);
 
-hold all
 nSamples = size(spikes.waveform,2);
+% set x-axis to time if it exists
+if isfield(spikes, 'timeaxis')
+    xax = spikes.timeaxis*1e3; % convert to milliseconds
+    units = 'msec';
+else
+    xax = 1:nSamples;
+    units = 'samples';
+end
+
+hold all
+
 
 k = 1;
 channels = unique(spikes.channel);
@@ -46,10 +61,11 @@ for ii = 1:numel(channels)
             n = numel(Unit);
             s = ceil(n/100);
             wave = spikes.waveform(Unit(1:s:end),:)./abs(min(min(spikes.waveform(Unit(1:s:end),:))));
-            plot(1:nSamples, wave-2*channels(ii), 'Color', co);
+            plot(xax, wave-2*mod(channels(ii), MaxChannel), 'Color', co);
     end
 end
 
 set(gca, 'YTick', sort(-2*channels), 'YTickLabel', abs(sort(-channels)))
 axis tight
 ylabel('Channel')
+xlabel(units)

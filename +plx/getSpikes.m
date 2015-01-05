@@ -62,7 +62,8 @@ spikes.channel  = [];
 
 for ii = 1:nChannels
     spikes.time = [spikes.time; double(pl.SpikeChannels(channelsWithUnits(ii)).Timestamps)/pl.ADFrequency];
-    spikes.id   = [spikes.id; ones(numel(pl.SpikeChannels(channelsWithUnits(ii)).Timestamps),1).*double(pl.SpikeChannels(channelsWithUnits(ii)).Units(:)+spikeCtr)];
+%     spikes.id   = [spikes.id; ones(numel(pl.SpikeChannels(channelsWithUnits(ii)).Timestamps),1).*double(pl.SpikeChannels(channelsWithUnits(ii)).Units(:)+spikeCtr)];
+    spikes.id   = [spikes.id; double(pl.SpikeChannels(channelsWithUnits(ii)).Units(:))+spikeCtr];
     % convert spike waveforms to milliVolts
 
     % check if spike comes from AD continuous channel or sig channel
@@ -86,10 +87,15 @@ end
 [spikes.time, ord] = sort(spikes.time);
 spikes.id          = spikes.id(ord);
 spikes.waveform    = spikes.waveform(ord,:);
-spikes.timeaxis    = ((1:pl.NumPointsWave) - pl.NumPointsPreThr)/pl.WaveformFreq;
+spikes.timeaxis    = ((1:pl.NumPointsWave) - pl.NumPointsPreThr)/pl.ADFrequency;
 % calculate waveform SNR
 units  = unique(spikes.id);
-nUnits = numel(find(units>0));
+if any(units==0)
+    spikes.id = spikes.id + 1;
+    units = units + 1;
+end
+
+nUnits = numel(units);
 spikes.snr = zeros(1,nUnits);
 for ii = 1:nUnits
     idx = spikes.id == units(ii);
@@ -106,10 +112,11 @@ end
 % plot waveforms
 if verbose
     figure(1); clf
+    units = unique(spikes.id);
     spn = ceil(sqrt(nUnits));
     for ii = 1:nUnits
         subplot(spn, spn, ii)
-        idx = find(spikes.id==ii);
+        idx = find(spikes.id==units(ii));
         plot(spikes.timeaxis*1e3, spikes.waveform(idx(1:100:end),:)', 'Color', .5*[1 1 1]); hold on
         plot(spikes.timeaxis*1e3, mean(spikes.waveform(idx, :)), 'k', 'Linewidth', 2); axis tight
         xlabel('msec')

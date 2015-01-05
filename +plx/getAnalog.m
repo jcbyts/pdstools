@@ -40,7 +40,27 @@ if nRates > 1
     return
 end
 
+if ~isfield(pl.ContinuousChannels(analogChannels(1)), 'Values')
+    disp('no analog data in this file')
+    return
+end
+
 an_info.adfreq      = pl.ContinuousChannels(analogChannels(1)).ADFrequency;
+
+nChannels = numel(analogChannels);
+fragSize = zeros(nChannels,1);
+% sum all fragments for each channels to get the total number of
+% samples per channel
+for ii = 1:nChannels
+    fragSize(ii) = sum(pl.ContinuousChannels(analogChannels(ii)).Fragments);
+end
+% check for empty channels
+bad = fragSize == 0;
+% remove them
+analogChannels(bad) = [];
+minSamples = min(fragSize(~bad));
+nChannels = numel(analogChannels);
+
 an_info.nsamples    = sum(pl.ContinuousChannels(analogChannels(1)).Fragments);
 an_info.timestamps  = double(pl.ContinuousChannels(analogChannels(1)).Timestamps)/pl.ADFrequency; %pl.ContinuousChannels(analogChannels(1)).ADFrequency;
 an_info.fragsamples = double(pl.ContinuousChannels(analogChannels(1)).Fragments);
@@ -50,20 +70,14 @@ an_info.preampgain  = [pl.ContinuousChannels(analogChannels).PreAmpGain];
 
 
 fprintf('Converting analog data to millivolts\n')
-nChannels = numel(analogChannels);
-fragSize = zeros(nChannels,1);
-% sum all fragments for each channels to get the total number of
-% samples per channel
-for ii = 1:nChannels
-    fragSize(ii) = sum(pl.ContinuousChannels(analogChannels(ii)).Fragments);
-end
+
 % initialize data to double (we need it in this format later)
-an_data = zeros(min(fragSize), nChannels, 'double');
+an_data = zeros(minSamples, nChannels, 'double');
 for ii = 1:nChannels
     fprintf('Channel %d of %d\n', ii, nChannels)
     thisChannel = analogChannels(ii);
     % convert values to milliVolts
-    an_data(:,ii) = (pl.ContMaxMagnitudeMV*double(pl.ContinuousChannels(thisChannel).Values(1:min(fragSize)))) ...
+    an_data(:,ii) = (pl.ContMaxMagnitudeMV*double(pl.ContinuousChannels(thisChannel).Values(1:minSamples))) ...
         / (2^(pl.BitsPerContSample-1) * pl.ContinuousChannels(thisChannel).PreAmpGain * pl.ContinuousChannels(thisChannel).ADGain);
 end
 

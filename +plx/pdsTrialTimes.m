@@ -59,7 +59,8 @@ mostCommonEvent = mode(eventID(ordered(1:numel(strobed.times))));
 % % stoffset(stoffset < 0) = inf; % times before strobe don't count
 % [~, id] = min(abs(stoffset));
 % trialStartId = events.id(id);
-trialStartId = events.id(mostCommonEvent);
+% trialStartId = events.id(mostCommonEvent);
+trialStartId = mostCommonEvent;
 trialStartEventName = events.name{mostCommonEvent};
 fprintf('Bit ''%s'' was flipped %d ms from the first strobe. Using that to align trial times\n', trialStartEventName, 1e3*mean(val(1:100)))
 trialStarts = events.time(events.id==trialStartId);
@@ -97,7 +98,7 @@ for tr = 1:ntrials
     if id < numel(trialStarts)
         trialstoptime  = trialStarts(id+1);
     else
-        trialstoptime  = max(structfun(@max, plx.events));
+        trialstoptime  = max(events.time);
     end
    
     plxtrialstart(pdstr) = trialstarttime;
