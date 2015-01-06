@@ -59,6 +59,8 @@ spikes.time     = [];
 spikes.id       = [];
 spikes.waveform = [];
 spikes.channel  = [];
+spikes.timeaxis = [];
+spikes.ADfreq   = pl.ADFrequency;
 
 for ii = 1:nChannels
     spikes.time = [spikes.time; double(pl.SpikeChannels(channelsWithUnits(ii)).Timestamps)/pl.ADFrequency];
