@@ -44,10 +44,13 @@ elseif isnumeric(tag) && tag <= nMeasurements
 elseif ischar(tag)
 	measBool = false(nMeasurements,1);
 	for ii = 1:nMeasurements
-		strind = strfind(char(measurements(ii).getName), tag);
-		if ~isempty(strind)
-			measBool(ii) = true;
-		end
+        tags = ovation.asarray(measurements(ii).getAllTags);
+        nTags = numel(tags);
+        tagMatch = false(numel(tags),1);
+        for jj = 1:nTags
+            tagMatch(jj) = strcmp(char(tags(1)), tag);
+        end
+        measBool(ii) = any(tagMatch);        
 	end		
 	fprintf('found %d measurements that match %s\n', sum(measBool), tag)
 	measurement = measurements(measBool);

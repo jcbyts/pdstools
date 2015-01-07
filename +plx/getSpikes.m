@@ -51,7 +51,7 @@ for ii = 1:numel(spikeChannels)
     nUnitsPerChannel(ii) = numel(unique(pl.SpikeChannels(ii).Units));
 end
 
-channelsWithUnits = find(spikeChannels>firstContinuousChannel & nUnitsPerChannel);
+channelsWithUnits = find(spikeChannels>firstContinuousChannel & nUnitsPerChannel>0);
 nChannels = numel(channelsWithUnits);
 spikeCtr = 0; % changed from 1 to 0... I believe we want to start with 0 because we add the unit number
 spikes = struct();
@@ -71,9 +71,9 @@ for ii = 1:nChannels
     % check if spike comes from AD continuous channel or sig channel
     SIG = pl.SpikeChannels(channelsWithUnits(ii)).SIGName;
     if strfind(SIG, 'sig')
-        waves = (pl.SpikeMaxMagnitudeMV*double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)') / (2^(pl.BitsPerSpikeSample-1) * pl.SpikePreAmpGain * pl.SpikeChannels(channelsWithUnits(ii)).Gain);
+        waves = (pl.SpikeMaxMagnitudeMV*double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)') / (2^(pl.BitsPerSpikeSample)/2 * pl.SpikePreAmpGain * pl.SpikeChannels(channelsWithUnits(ii)).Gain);
     elseif strfind(SIG, 'adc')
-        waves = (pl.ContMaxMagnitudeMV*double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)') / (2^(pl.BitsPerContSample-1) * pl.ContinuousChannels(channelsWithUnits(ii)).PreAmpGain * pl.ContinuousChannels(channelsWithUnits(ii)).ADGain);
+        waves = (pl.ContMaxMagnitudeMV*double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)') / (2^(pl.BitsPerContSample)/2 * pl.ContinuousChannels(channelsWithUnits(ii)).PreAmpGain * pl.ContinuousChannels(channelsWithUnits(ii)).ADGain);
     else
         error('channel type not recognized. Gains not set.')
     end
