@@ -73,7 +73,12 @@ for ii = 1:nChannels
     if strfind(SIG, 'sig')
         waves = (pl.SpikeMaxMagnitudeMV*double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)') / (2^(pl.BitsPerSpikeSample)/2 * pl.SpikePreAmpGain * pl.SpikeChannels(channelsWithUnits(ii)).Gain);
     elseif strfind(SIG, 'adc')
-        waves = (pl.ContMaxMagnitudeMV*double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)') / (2^(pl.BitsPerContSample)/2 * pl.ContinuousChannels(channelsWithUnits(ii)).PreAmpGain * pl.ContinuousChannels(channelsWithUnits(ii)).ADGain);
+        chMatch = [pl.ContinuousChannels(:).Channel] == pl.SpikeChannels(channelsWithUnits(ii)).Channel;
+        if isempty(chMatch)
+            waves = (pl.SpikeMaxMagnitudeMV*double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)') / (2^(pl.BitsPerSpikeSample)/2 * pl.SpikePreAmpGain * pl.SpikeChannels(channelsWithUnits(ii)).Gain);
+        else
+            waves = (pl.ContMaxMagnitudeMV*double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)') / (2^(pl.BitsPerContSample)/2 * pl.ContinuousChannels(chMatch).PreAmpGain * pl.ContinuousChannels(chMatch).ADGain);
+        end
     else
         error('channel type not recognized. Gains not set.')
     end

@@ -1,4 +1,4 @@
-function bpspikes = plx_runBinaryPursuit(plxname, spikes, info, greediness, saveDir)
+function bpspikes = runBinaryPursuit(plxname, spikes, info, greediness, saveDir)
 % spikes = plx_runBinaryPursuit(plxname, spikes, info, greediness)
 
 % TODO: set this up to run based on how much memory you have on your
@@ -9,6 +9,7 @@ if ~exist('saveDir', 'var')
     saveDir = pwd;
 end
 
+SNRthresh =3;
 %% -----------------------------------------------------------------------%
 % Binary pursuit: 
 % Binary pursuit is an algorithm for detecting simultaneous spikes from
@@ -18,7 +19,7 @@ end
 % that up for you. 
 if ~isfield(info, 'binaryPursuitChannels') && info.trodalness == 1
     
-    ChannelsWithIsolatedUnits = spikes.channel(spikes.snr > 4);
+    ChannelsWithIsolatedUnits = spikes.channel(spikes.snr > SNRthresh);
     
     possibleChannels = unique(ChannelsWithIsolatedUnits);
     info.binaryPursuitChannels = possibleChannels(sum(bsxfun(@eq, possibleChannels, ChannelsWithIsolatedUnits'))>=2);
@@ -49,7 +50,7 @@ if isfield(info, 'binaryPursuitChannels') && ~isempty(info.binaryPursuitChannels
     % loop over channels and run only on specified channels (it takes time)
     for iCh = 1:numel(info.binaryPursuitChannels)
         unitsOnChannel = info.binaryPursuitChannels(iCh) == spikes.channel;
-        unitsAreIsolated = spikes.snr > 4;
+        unitsAreIsolated = spikes.snr > SNRthresh;
         unitsToPursue    = find(unitsOnChannel & unitsAreIsolated);
         % if there are more than one unit on a channel that have an
         % isolated waveform, they can be passed into the binary pursuit
