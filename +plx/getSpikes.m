@@ -86,6 +86,9 @@ for ii = 1:nChannels
      spikeCtr = spikeCtr + nUnitsPerChannel(channelsWithUnits(ii));
 end
 
+if useContinuous
+    spikes.channel = spikes.channel - firstContinuousChannel;
+end
 [spikes.time, ord] = sort(spikes.time);
 spikes.id          = spikes.id(ord);
 spikes.waveform    = spikes.waveform(ord,:);
