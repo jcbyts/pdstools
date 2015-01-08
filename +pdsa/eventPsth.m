@@ -65,6 +65,8 @@ else
 end
 if ~isempty(skern)
     tspcnt = filter(skern, 1, tspcnt, [], 2);
+    nz = filter(skern, 1, ones(size(tspcnt)), [], 2);
+    tspcnt = tspcnt./nz;
 end
 
 m = mean(tspcnt)/bs;
