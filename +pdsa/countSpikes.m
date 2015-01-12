@@ -15,13 +15,17 @@ function [v, id, dt] = countSpikes(sptimes, ev1, ev2)
 
 validEventStarts = find(~isnan(ev1));
 validEventStops  = find(~isnan(ev2));
-nE1 = numel(validEventStarts);
-nE2 = numel(validEventStops);
+nE1 = numel(ev1);
+nE2 = numel(ev2);
 
 if nE2 == 1 && nE1~=nE2
     e1 = ev1(validEventStarts);
     e2 = e1+ev2;
+elseif nE1 == nE2
+    e1 = ev1;
+    e2 = ev2;
 else
+    error('you need to make them the same size')
     e1   = ev1(validEventStarts);
     tmp  = ev2(validEventStops);
     e2   = nan(numel(e1),1);
@@ -47,13 +51,17 @@ else
     
 end
 
-good = ~isnan(e1);
+% good = ~isnan(e1);
+good = true(size(e1));
 e1 = e1(good);
 e2 = e2(good);
 nE1 = sum(good);
 dt = e2-e1;
 id = validEventStarts(good);
-v = zeros(nE1,1);
-for ii = 1:nE1
+v = nan(nE1,1);
+validIdx = intersect(validEventStarts, validEventStops);
+nValid = numel(validIdx);
+for jj = 1:nValid %     1:nE1
+    ii = validIdx(jj);
    v(ii) = sum(sptimes > e1(ii) & sptimes < e2(ii));
 end
