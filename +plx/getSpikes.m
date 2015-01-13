@@ -74,7 +74,7 @@ for ii = 1:nChannels
         waves = (pl.SpikeMaxMagnitudeMV*double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)') / (2^(pl.BitsPerSpikeSample)/2 * pl.SpikePreAmpGain * pl.SpikeChannels(channelsWithUnits(ii)).Gain);
     elseif strfind(SIG, 'adc')
         chMatch = [pl.ContinuousChannels(:).Channel] == pl.SpikeChannels(channelsWithUnits(ii)).Channel;
-        if isempty(chMatch)
+        if isempty(chMatch) || ~any(chMatch)
             waves = (pl.SpikeMaxMagnitudeMV*double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)') / (2^(pl.BitsPerSpikeSample)/2 * pl.SpikePreAmpGain * pl.SpikeChannels(channelsWithUnits(ii)).Gain);
         else
             waves = (pl.ContMaxMagnitudeMV*double(pl.SpikeChannels(channelsWithUnits(ii)).Waves)') / (2^(pl.BitsPerContSample)/2 * pl.ContinuousChannels(chMatch).PreAmpGain * pl.ContinuousChannels(chMatch).ADGain);
