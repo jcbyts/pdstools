@@ -1,4 +1,4 @@
-function [m,s,bc,v, tspcnt] = eventPsth(sptimes, ev, win, bs, skern)
+function [m,s,bc,v, tspcntOut] = eventPsth(sptimes, ev, win, bs, skern)
 % Make Peri-Stimulus-Time-Histogram (PSTH) aligned to stimulus events
 % [m, s, bc, v, tspcnt] = eventPsth(sptimes, ev, win, bs, skern)
 %   inputs
@@ -25,36 +25,60 @@ if nargin < 5
     end
 end
 
+
+[ev, trid] = sort(ev(:));
+
+
 be = win(1):bs:win(2); 
 bc = be(1:end-1)+bs/2;
 nbins = numel(bc);
 
+% normalize smoothing kernel
 if ~isempty(skern)
+    k = numel(skern);
+    be = (win(1)-bs*k):bs:(win(2)+bs*k);
+    bc = be(1:end-1)+bs/2;
+    nbins = numel(bc);
+    goodindex = bc>=win(1) & bc <=win(2);
     skern = skern/sum(skern);
-    znorm = filter(skern,1,ones(nbins+1,1));
+    znorm = filtfilt(skern,1,ones(nbins+1,1));
 end
+
 validEvents = ~isnan(ev);
 nEvents = sum(validEvents);
 
 % for loop version (super slow)
-if nEvents > 1e3
-    validEvents = find(~isnan(ev));
-    nEvents = numel(validEvents);
+chunkSize = 1e3;
+if nEvents > chunkSize
+    evstart = (1:chunkSize:nEvents)';
+    evend   = [chunkSize:chunkSize:nEvents nEvents]';
+    
     tspcnt  = zeros(nEvents, nbins);
-    for ii = 1:nEvents
-        ievent = validEvents(ii);
-        st = sptimes - ev(ievent);
-        spcnt = histc(st, be);
-        if isempty(skern)
-            smcnt = spcnt;
-        else
-            smcnt = filter(skern,1,spcnt)./znorm;
-        end
-        
-        if any(spcnt)
-            tspcnt(ii,:)  = smcnt(1:nbins);
+    for kk = 1:numel(evstart)
+        idx         = evstart(kk):evend(kk);
+        evtmp       = ev(validEvents(idx))';
+        spindx      = sptimes > (evtmp(1) - win(1)) & sptimes < (evtmp(end) + win(2));
+%         spindx      = 1:numel(sptimes);
+
+        tmpspcnt    = bsxfun(@minus, sptimes(spindx), evtmp);
+        tmpspcnt    = histc(tmpspcnt, be)';
+        if any(tmpspcnt(:))
+            tspcnt(idx,:)  = tmpspcnt(:,1:nbins);
+%             tspcnt(trid(idx),:)  = tmpspcnt(:,1:nbins);
         end
     end
+    
+%     for ii = 1:nEvents
+%         ievent = validEvents(ii);
+%         st = sptimes - ev(ievent);
+%         st = st(st>be(1) & st < be(end));
+%         spcnt = histc(st, be);
+%         smcnt = spcnt;
+%         
+%         if any(spcnt)
+%             tspcnt(ii,:)  = smcnt(1:nbins);
+%         end
+%     end
 else
     
     % bsxfun version
@@ -63,15 +87,28 @@ else
     tspcnt    = histc(tmpspcnt, be)';
     tspcnt(:,end) = [];
 end
+
+
+% if smoothing needs to be done
 if ~isempty(skern)
-    tspcnt = filter(skern, 1, tspcnt, [], 2);
-    nz = filter(skern, 1, ones(size(tspcnt)), [], 2);
+%     tspcnt = filter(skern, 1, tspcnt, [], 2);
+%     nz = filter(skern, 1, ones(size(tspcnt)), [], 2);
+
+    tspcnt = filtfilt(skern, 1, tspcnt')';
+    nz = filtfilt(skern, 1, ones(size(tspcnt))')';
     tspcnt = tspcnt./nz;
+    tspcnt = tspcnt(:, goodindex);
+    bc = bc(goodindex);
 end
 
+% get summary statistics
 m = mean(tspcnt)/bs;
 v = var(tspcnt)/bs;
 s = std(tspcnt)/sqrt(nEvents)/bs;
 
+if nargout > 4
+    tspcntOut = zeros(size(tspcnt));
+    tspcntOut(trid,:) = tspcnt;
+end
 
     

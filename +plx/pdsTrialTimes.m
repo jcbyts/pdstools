@@ -16,6 +16,21 @@ else
 end
 
 % find whether pds or plx started first
+s = size(PDS.unique_number);
+if any(s==1)
+    offset = finddelay(strobed.values(:,end), PDS.unique_number(:));
+    pdstrials = (1:numel(PDS.unique_number(:))) + offset;
+    strobetrials = 1:numel(strobed.values(:,end));
+    pdsstart = pdstrials(1);
+    plxstart = strobetrials(1);
+    ns = numel(strobetrials);
+    np = numel(pdstrials);
+    pdsend = pdstrials(min(ns,np));
+    plxend = strobetrials(min(ns, np));
+    uniqueNums = PDS.unique_number(:);
+    strobeNums = strobed.values(:,end);
+    
+else
 pdsstart = find(sum(bsxfun(@eq, strobed.values(1,2:end) , PDS.unique_number(:,2:end)),2) == 5);
 plxstart = find(sum(bsxfun(@eq, strobed.values(:,2:end) , PDS.unique_number(1,2:end)),2) == 5);
 pdsend	 = find(sum(bsxfun(@eq, strobed.values(end,2:end) , PDS.unique_number(:,2:end)),2) == 5);
@@ -24,6 +39,9 @@ if isempty(pdsend)
     pdsend = plxend + 1;
 else
     plxend   = find(sum(bsxfun(@eq, strobed.values(:,2:end) , PDS.unique_number(pdsend,2:end)),2) == 5);
+end
+uniqueNums = PDS.unique_number(:,2:end);
+strobeNums = strobed.values(:,2:end);
 end
 
 if isempty(pdsstart),
@@ -79,7 +97,7 @@ plxtrialstop  = nan(numel(PDS.goodtrial),1);
 
 for tr = 1:ntrials
     
-    uniqchk = sum(strobed.values(plxtr,2:end) == PDS.unique_number(pdstr,2:end))==5;
+    uniqchk = sum(strobeNums(plxtr,:) == uniqueNums(pdstr,:))==size(uniqueNums,2);
 
     while ~uniqchk
         plxtimestamp = datenum(double([PDS.unique_number(pdstr,1) strobed.values(plxtr,2:end)]));
