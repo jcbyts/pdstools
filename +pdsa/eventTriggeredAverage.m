@@ -31,5 +31,5 @@ for kCh = 1:size(an,2)
     l = an(widxs, kCh);
     l = reshape(l, [], windowSize);
     stAn(:, kCh) = mean(l);
-    stAn_SD(:, kCh) = std(l); % / sqrtnsp;
+    stAn_SD(:, kCh) = std(l)/ sqrt(size(l,1));
 end
