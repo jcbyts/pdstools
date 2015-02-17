@@ -2,7 +2,7 @@ function samples = convertTimeToSamples(times, adfreq, ts, fn)
 % Convert timestamps into samples using sampling rate and start-time
 % samples = convertTimeToSamples(times, adfreq, ts, fn)
 % inputs:
-%   times  [n x 1] - vector of timestamps
+%   times  [any] - vector/matrix of timestamps
 %  adfreq  [1 x 1] - sampling rate
 %      ts  [m x 1] - vector of recording fragment start timestamps
 %      fn  [m x 1] - vector of fragment sample counts
@@ -27,7 +27,7 @@ nfragments = numel(fn);
 fb = ts;
 fe = (ts+fn*adfreq);
 
-samples = nan(numel(times),1);
+samples = nan(size(times));
 for ff = 1:nfragments
     idx = times >= fb(ff) & times <= fe(ff);
     samples(idx) = floor((times(idx) - fb(ff))*adfreq)+1;
