@@ -1,4 +1,4 @@
-function [stAn, stAn_SD, widx] = eventTriggeredAverage(an, st, win)
+function [stAn, stAn_SD, widx, wfs] = eventTriggeredAverage(an, st, win)
 % calculate a triggered average
 % [stAn, stAn_SD] = eventTriggeredAverage(an, ev, win)
 % INPUTS
@@ -26,10 +26,16 @@ st(st > size(an,1)) = [];
 widxs = bsxfun(@plus, st, widx);
 widxs(widxs(:,1) <= 0,:) = []; % ignore very early spikes
 widxs(widxs(:,end) > size(an,1),:) = []; % ignore very late spikes
-
+if nargout == 4
+    wfs = zeros(numel(st), numel(widx)*size(an,2));
+end
+    
 for kCh = 1:size(an,2)
     l = an(widxs, kCh);
     l = reshape(l, [], windowSize);
     stAn(:, kCh) = mean(l);
-    stAn_SD(:, kCh) = std(l)/ sqrt(size(l,1));
+    stAn_SD(:, kCh) = std(l); %/ sqrt(size(l,1));
+    if nargout ==4
+        wfs(:,(1:numel(widx)) + numel(widx) * (kCh-1)) = l;
+    end
 end
