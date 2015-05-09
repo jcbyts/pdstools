@@ -34,8 +34,8 @@ end
 for kCh = 1:size(an,2)
     l = an(widxs, kCh);
     l = reshape(l, [], windowSize);
-    stAn(:, kCh) = mean(l);
-    stAn_SD(:, kCh) = std(l); %/ sqrt(size(l,1));
+    stAn(:, kCh) = nanmean(l);
+    stAn_SD(:, kCh) = nanstd(l); %/ sqrt(size(l,1));
     if nargout >=4
         wfs(:,(1:numel(widx)) + numel(widx) * (kCh-1)) = l;
     end

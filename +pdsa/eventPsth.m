@@ -106,9 +106,10 @@ m = mean(tspcnt)/bs;
 v = var(tspcnt)/bs;
 s = std(tspcnt)/sqrt(nEvents)/bs;
 
-if nargout > 4
-    tspcntOut = zeros(size(tspcnt));
-    tspcntOut(trid,:) = tspcnt;
-end
+tspcntOut = tspcnt;
+% if nargout > 4
+%     tspcntOut = zeros(size(tspcnt));
+%     tspcntOut(trid,:) = tspcnt;
+% end
 
     
