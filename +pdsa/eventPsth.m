@@ -10,23 +10,13 @@ function [m,s,bc,v, tspcntOut] = eventPsth(sptimes, ev, win, bs, skern)
 %       works in any units as long as all variable have the same units.
 
 % 20140415 jly wrote it
+import pdsa.*
 
 if nargin < 5
     skern = [];
-    if nargin < 4
-        if nargin < 3
-            win = [-mean(diff(sptimes)) 10*mean(diff(sptimes))];
-            if nargin < 2
-                help eventPsth
-                return
-            end
-        end
-        bs = diff(win)/100;
-    end
 end
 
 ev=ev(:);
-binfun = @(t) (t == 0) + ceil(t/bs);
 
 be = win(1):bs:win(2);
 bc = be(1:end-1)+bs/2;
@@ -34,30 +24,16 @@ bc = be(1:end-1)+bs/2;
 % normalize smoothing kernel
 if ~isempty(skern)
     k = numel(skern);
+    wins=[(win(1)-bs*k) (win(2)+bs*k)];
     be = (win(1)-bs*k):bs:(win(2)+bs*k);
     bc = be(1:end-1)+bs/2;
     goodindex = bc>win(1) & bc <win(2);
     skern = skern/sum(skern);
+else
+    wins=win;
 end
 
-validEvents = ~isnan(ev);
-nTrials=numel(ev);
-
-nEvents = sum(validEvents);
-
-sbn = [];
-str = [];
-assert(nEvents<2e3, 'too many events for this to run fast!')
-for kEvent=1:nTrials
-    if ~validEvents(kEvent)
-        continue
-    end
-    spo = sptimes(sptimes > ev(kEvent) + be(1) & sptimes < ev(kEvent) + be(end))- ev(kEvent);
-    sbn = [sbn; binfun(spo- be(1))]; %#ok<AGROW>
-    str = [str; ones(numel(spo),1)*kEvent]; %#ok<AGROW>
-end
-tspcnt = full(sparse(str, sbn, 1, nTrials, binfun(be(end)-be(1))));
-tspcnt(~validEvents,:)=nan;
+[tspcnt,~,validEvents]=binSpTimes(sptimes, ev, wins, bs);
 
 % if smoothing needs to be done
 if ~isempty(skern)
@@ -71,8 +47,8 @@ if ~isempty(skern)
 end
 
 % get summary statistics
-m = mean(tspcnt(validEvents,:))/bs;
-v = var(tspcnt(validEvents,:))/bs;
-s = std(tspcnt(validEvents,:))/sqrt(nEvents)/bs;
+m = nanmean(tspcnt)/bs;
+v = nanvar(tspcnt)/bs;
+s = nanstd(tspcnt)/sqrt(sum(validEvents))/bs;
 
 tspcntOut = tspcnt;
