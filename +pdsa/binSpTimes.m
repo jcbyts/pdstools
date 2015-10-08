@@ -1,5 +1,6 @@
 function [spcnt, bcenters,validEvents]=binSpTimes(sptimes, ev, win, binSize)
 % bin spike times around event
+% [spcnt, bcenters,validEvents]=binSpTimes(sptimes, ev, win, binSize)
 
 
 if nargin < 4
