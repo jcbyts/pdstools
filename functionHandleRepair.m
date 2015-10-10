@@ -1,6 +1,9 @@
-function obj=functionHandleRepair(obj)
+function obj=functionHandleRepair(obj, verbose)
 % fix broken function handles in a loaded struct or handle class
 % obj=functionHandleRepair(obj)
+if nargin==1
+    verbose=true;
+end
 
 if isstruct(obj)
     fields=fieldnames(obj);
@@ -24,7 +27,9 @@ for kField=1:numel(fields)
     else
         if isa(obj.(fields{kField}), 'struct') && isfield(obj.(fields{kField}), 'workspace')
             obj.(fields{kField})=reconstructFcn(obj.(fields{kField}));
-            fprintf('Function [%s] reconstructed\n', (fields{kField}))
+            if verbose
+                fprintf('Function [%s] reconstructed\n', (fields{kField}))
+            end
             %             if strcmp(S.type, 'anonymous')
             %                 keyboard
             %
@@ -40,13 +45,16 @@ for kField=1:numel(fields)
             f=functions(obj.(fields{kField}));
             if strcmp(f.type, 'anonymous')
                 obj.(fields{kField})=f;
-                fprintf('Function handle [%s] meta data included\n', fields{kField})
+                if verbose
+                    fprintf('Function handle [%s] meta data included\n', fields{kField})
+                end
             end
         end
     end
 end
-
-fprintf('Done\n')
+if verbose
+    fprintf('Done\n')
+end
 
 function out = reconstructFcn(s)
 
