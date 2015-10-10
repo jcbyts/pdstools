@@ -1,4 +1,4 @@
-function h=plotUnityHistogram(xy, varargin)
+function [h, offset]=plotUnityHistogram(xy, varargin)
 % plot the difference histogram on the unity line
 % haven't figured out which options to include yet
 % plotUnityHistogram(xy)
@@ -13,6 +13,7 @@ function h=plotUnityHistogram(xy, varargin)
 %   'UnityLine'     [boolean] plot the unity line (default: true)
 %   'Axes'          [char] histogram axes: 'on' or 'off' (default: 'on')
 %   'AxesLabels'    [char] histogram axes labels: 'on' or 'off' (default: 'on')
+%   'Offset'        [1 x 2] coordinates of histogram 0,0
 %
 % see also: projectedHistogram.m
 
@@ -32,6 +33,8 @@ p.addOptional('Linewidth', 1)
 p.addOptional('UnityLine', true)
 p.addOptional('Axes', 'on')
 p.addOptional('AxesLabels', 'on')
+p.addOptional('Offset', [])
+p.addOptional('Yscale', [])
 p.parse(varargin{:})
 
 if isempty(p.Results.FaceColor)
@@ -44,9 +47,10 @@ end
 v=[1 -1]; v=v/norm(v); % line orthogonal to unity
 
 if strcmpi(p.Results.Axes, 'on')
-    [bx,by,bcenters, count] = projectedHistogram(xy, p.Results.nBins, v);
+    [bx,by,bcenters, count, offset] = projectedHistogram(xy, p.Results.nBins, v, p.Results.Offset, p.Results.Yscale);
+    fprintf('offset: %d\n', offset)
 else
-    [bx,by]=projectedHistogram(xy, p.Results.nBins, v);
+    [bx,by]=projectedHistogram(xy, p.Results.nBins, v, p.Results.Offset, p.Results.Yscale);
 end
 
 xd(1)=min(min(xy));
