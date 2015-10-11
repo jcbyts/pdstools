@@ -1,12 +1,13 @@
-function [bx,by, bcenters, count, offset]=projectedHistogram(xy, n, v, offset, rnge)
+function [bx,by, bcenters, count, offset]=projectedHistogram(xy, n, v, offset, normzer, rnge)
 % plot the difference histogram on the unity line
 % haven't figured out which options to include yet
-% [bx, by, bcenters, count]=plotUnityHistogram(xy, nBins, v, offset, rnge)
+% [bx, by, bcenters, count]=plotUnityHistogram(xy, nBins, v, offset, normzer, rnge)
 % Inputs:
 %   xy      [n x 2] matrix of xy points
 %   n       [1 x 1] number of bins (or vector of bin edges)
 %   v       [1 x 2] slope of line
 %   offset  [1 x 2] xy offset for histogram
+%   normzer [1 x 1] normalization for count. We have to scale this thing
 %   rnge    [1 x 1] scale for yaxis of histogram
 % Outpus:
 %   bx      - vector of x coordinates for plotting histogram manually
@@ -50,7 +51,10 @@ else
 end
 count=cnt;
 bcenters=bins;
-cnt=cnt/sum(cnt)*rnge; % normalize
+if ~exist('normzer', 'var') || isempty(normzer)
+    normzer=sum(cnt);
+end
+cnt=cnt/normzer*rnge; % normalize
 
 
 

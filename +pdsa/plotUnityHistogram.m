@@ -34,6 +34,7 @@ p.addOptional('UnityLine', true)
 p.addOptional('Axes', 'on')
 p.addOptional('AxesLabels', 'on')
 p.addOptional('Offset', [])
+p.addOptional('MaxCount', [])
 p.addOptional('Yscale', [])
 p.parse(varargin{:})
 
@@ -50,7 +51,7 @@ if strcmpi(p.Results.Axes, 'on')
     [bx,by,bcenters, count, offset] = projectedHistogram(xy, p.Results.nBins, v, p.Results.Offset, p.Results.Yscale);
     fprintf('offset: %d\n', offset)
 else
-    [bx,by]=projectedHistogram(xy, p.Results.nBins, v, p.Results.Offset, p.Results.Yscale);
+    [bx,by]=projectedHistogram(xy, p.Results.nBins, v, p.Results.Offset, p.Results.MaxCount, p.Results.Yscale);
 end
 
 xd(1)=min(min(xy));
