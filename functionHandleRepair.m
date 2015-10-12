@@ -21,7 +21,7 @@ for kField=1:numel(fields)
             if isa(obj.(fields{kField})(k), 'struct') && isfield(obj.(fields{kField})(k), 'workspace')
                 obj.(fields{kField})(k)=reconstructFcn(obj.(fields{kField})(k));
             elseif isa(obj.(fields{kField})(k), 'handle') || (isa(obj.(fields{kField})(k), 'struct') && ~isfield(obj.(fields{kField})(k), 'workspace'))
-                obj.(fields{kField})(k)=functionHandleRepair(obj.(fields{kField})(k));
+                obj.(fields{kField})(k)=functionHandleRepair(obj.(fields{kField})(k), verbose);
             end
         end
     else
@@ -40,7 +40,7 @@ for kField=1:numel(fields)
             %                 end
             %             end
         elseif isa(obj.(fields{kField}), 'handle') || (isa(obj.(fields{kField}), 'struct') && ~isfield(obj.(fields{kField}), 'workspace'))
-            obj.(fields{kField})=functionHandleRepair(obj.(fields{kField}));
+            obj.(fields{kField})=functionHandleRepair(obj.(fields{kField}), verbose);
         elseif isa(obj.(fields{kField}), 'function_handle')
             f=functions(obj.(fields{kField}));
             if strcmp(f.type, 'anonymous')
