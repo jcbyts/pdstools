@@ -14,5 +14,10 @@ xy=[xy1; xy2]; % concatenate distributions to find coordinates
 
 % plot
 figure(1); clf
+subplot(1,2,1) % axes 'on'
 plotUnityHistogram(xy2, 'nBins', bcenters, 'Offset', offset, 'UnityLine', 0, 'MaxCount', max(count), 'Yscale', 10); hold on
 plotUnityHistogram(xy1, 'nBins', bcenters, 'Offset', offset, 'MaxCount', max(count), 'Yscale', 10); hold on
+
+subplot(1,2,2)% axes 'on'
+plotUnityHistogram(xy2, 'nBins', bcenters, 'Offset', offset, 'UnityLine', 0, 'MaxCount', max(count), 'Yscale', 10, 'Axes', 'off'); hold on
+plotUnityHistogram(xy1, 'nBins', bcenters, 'Offset', offset, 'MaxCount', max(count), 'Yscale', 10, 'Axes', 'on'); hold on

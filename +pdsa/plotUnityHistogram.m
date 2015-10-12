@@ -48,7 +48,7 @@ end
 v=[1 -1]; v=v/norm(v); % line orthogonal to unity
 
 if strcmpi(p.Results.Axes, 'on')
-    [bx,by,bcenters, count, offset] = projectedHistogram(xy, p.Results.nBins, v, p.Results.Offset, p.Results.Yscale);
+    [bx,by,bcenters, count, offset] = projectedHistogram(xy, p.Results.nBins, v, p.Results.Offset,  p.Results.MaxCount, p.Results.Yscale);
     fprintf('offset: %d\n', offset)
 else
     [bx,by]=projectedHistogram(xy, p.Results.nBins, v, p.Results.Offset, p.Results.MaxCount, p.Results.Yscale);
