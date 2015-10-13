@@ -13,13 +13,14 @@ function S = jpsth(s1,s2,lag)
 	sd2=std(s2);
 
 	jpnorm= (rawJPSTH(s1,s2)-(m1(:)*m2(:)')) ./ (sd1(:)*sd2(:)');
-	[covgrm,shigh,slow]=covariogram(s1,s2,lag);
+	[covgrm,shigh,slow, ccraw]=covariogram(s1,s2,lag);
 	speak=sigspan(covgrm,shigh);
 	strough=sigspan(-covgrm,-slow);
 
 	S=struct('psth1',m1,'psth2',m2,...
 		'njpsth', jpnorm, ...
 		'xchist', xcorrhist(jpnorm,lag), ...
+        'ccraw', ccraw, ...
 		'covgrm', covgrm,...
 		'slow',slow, 'shigh', shigh, ...
 		'speak', speak, 'strough', strough);
@@ -42,7 +43,7 @@ function xch=xcorrhist(jp,lag)
 		xch(k+lag+1) = (sum(diag(jp,k)))/(length(jp)-abs(k));
 	end
 
-function [covgrm, shigh, slow] = covariogram(s1,s2,lag)
+function [covgrm, shigh, slow, cc] = covariogram(s1,s2,lag)
 	if nargin<3, lag=50; end
 	nTrials=size(s1,1);
 	nBins=size(s1,2);
