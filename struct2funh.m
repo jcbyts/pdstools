@@ -1,16 +1,13 @@
-function obj=functionHandleRepair(obj, verbose, recursive)
-% fix broken function handles in a loaded struct or handle class
-% obj=functionHandleRepair(obj, verbose, recursive)
+function obj=struct2funh(obj, verbose)
+% replace function meta data with appropriate function handle
+% obj=struct2funh(obj, verbose, recursive)
 % verbose true prints out every function handle that is repaired
-% recursive true steps down the hierarchy. Fals stays only at the top level
-if ~exist('recursive', 'var') || isempty(recursive)
-    recursive = true;
-end
 
 if ~exist('verbose', 'var') || isempty(verbose)
     verbose=true;
 end
 
+recursive=true;
 if isstruct(obj)
     fields=fieldnames(obj);
 else
@@ -27,7 +24,7 @@ for kField=1:numel(fields)
             if isa(obj.(fields{kField})(k), 'struct') && isfield(obj.(fields{kField})(k), 'workspace')
                 obj.(fields{kField})(k)=reconstructFcn(obj.(fields{kField})(k));
             elseif (isa(obj.(fields{kField})(k), 'handle') || (isa(obj.(fields{kField})(k), 'struct') && ~isfield(obj.(fields{kField})(k), 'workspace'))) && recursive
-                obj.(fields{kField})(k)=functionHandleRepair(obj.(fields{kField})(k), verbose);
+                obj.(fields{kField})(k)=struct2funh(obj.(fields{kField})(k), verbose);
             end
         end
     else
@@ -36,25 +33,8 @@ for kField=1:numel(fields)
             if verbose
                 fprintf('Function [%s] reconstructed\n', (fields{kField}))
             end
-            %             if strcmp(S.type, 'anonymous')
-            %                 keyboard
-            %
-            %                 fstr=func2str(obj.(fields{kField}));
-            %                 if strncmp(fstr,'@',1)
-            %                     obj.(fields{kField})=eval(fstr);
-            %                     fprintf('function handle [%s] fixed\n', fields{kField})
-            %                 end
-            %             end
         elseif (isa(obj.(fields{kField}), 'handle') || (isa(obj.(fields{kField}), 'struct') && ~isfield(obj.(fields{kField}), 'workspace'))) && recursive
-            obj.(fields{kField})=functionHandleRepair(obj.(fields{kField}), verbose);
-        elseif isa(obj.(fields{kField}), 'function_handle')
-            f=functions(obj.(fields{kField}));
-            if strcmp(f.type, 'anonymous')
-                obj.(fields{kField})=f;
-                if verbose
-                    fprintf('Function handle [%s] meta data included\n', fields{kField})
-                end
-            end
+            obj.(fields{kField})=struct2funh(obj.(fields{kField}), verbose);
         end
     end
 end
@@ -69,8 +49,8 @@ for iWks = 1:numel(s.workspace)
     varnames = fieldnames(wkspace);
     if ~isempty(varnames)
         for i = 1:numel(varnames)
-            try
-                tmp = wkspace.(varnames{i});
+            try %#ok<TRYNC>
+                tmp = wkspace.(varnames{i}); %#ok<NASGU>
                 eval([varnames{i} ' = tmp;']);
             end
         end
