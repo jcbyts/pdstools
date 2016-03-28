@@ -112,6 +112,11 @@ for iSaccade=1:length(potential_saccades)
      
 end
 
+if isempty(iSaccade)
+    result=[];
+    smoothTrace=[];
+    return
+end
 sacdur=endindex-startindex;
 sacsize=sqrt(sum((trace(:,endindex)-trace(:,startindex)).^2));
 %do a hist of saccade durarion, hopefullt a clear cutoff
