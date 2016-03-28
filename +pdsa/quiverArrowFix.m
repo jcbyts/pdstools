@@ -40,10 +40,12 @@ if datenum(version('-date')) >= datenum('September 15, 2014')
     xd = xlim;
     yd = ylim;
     
-    x1 = x - dx;
+%     x1 = x - dx;
+    x1 = x; % - dx;
     x2 = x + dx;
     
-    y1 = y - dy;
+    y1 = y; % - dy;
+%     y1 = y - dy;
     y2 = y + dy;
     
     % coordinate transform 1
