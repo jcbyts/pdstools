@@ -16,16 +16,27 @@ end
 if ~exist('binsize', 'var')
     binsize = 1e-3; % assume ms bins
 end
-
+s=size(lambda);
+lambda=lambda(:); % reshape into column vector
+% % keep track of zeros and remove them because they mess up the mono
+% l0=zeros(s);
+% zeroindex=l0==0;
+% lambda(zeroindex)=[]; remove
 nbins       = numel(lambda);
 duration    = nbins*binsize; % in seconds
 time        = linspace(0,duration, nbins);
 
 % Time rescaling gamma
 intensity = cumsum(lambda)*binsize;
+
+% monotonicity required for interp
+% nonmonotonic=[0; diff(intensity)==0];
+
 isi       = gamrnd(k,1/k,[nbins 1]);
 
 sisi      = cumsum(isi);
 sisi      = sisi(sisi<max(intensity));
 y         = interp1(intensity, time, sisi);
+% y         = interp1(intensity(~nonmonotonic), time(~nonmonotonic), sisi);
 spks      = histc(y, time);
+spks=reshape(spks, s);
