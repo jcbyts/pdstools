@@ -1,6 +1,6 @@
 function [stAn, stAn_SD, widx, wfs, spidx] = eventTriggeredAverage(an, st, win)
 % calculate a triggered average
-% [stAn, stAn_SD] = eventTriggeredAverage(an, ev, win)
+% [stAn, stAn_SD, widx, wfs, spidx] = eventTriggeredAverage(an, st, win)
 % INPUTS
 %   an [n x m] analog data (number of samples by number of channels)
 %   st [k x 1] vector of event indices to trigger on
