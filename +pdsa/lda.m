@@ -18,7 +18,7 @@ classdef lda < handle
     end
     
     methods
-        function l=lda(X,Y,varargin) % constructor
+        function l=lda(X,Y) % constructor
             
             
             classes=unique(Y);

@@ -14,15 +14,16 @@ X(Y,:)=mvnrnd(mu1, C, sum(Y));
 X(~Y,:)=mvnrnd(mu2, C, sum(~Y));
 
 
-[m,k]=pdsa.lda(X,Y);
-
+l=pdsa.lda(X,Y);
+l.train
 figure(1); clf
 subplot(121)
 histogram(X(Y,1)); hold on
 histogram(X(~Y,1));
 subplot(122)
-histogram(X(Y,:)*m+k); hold on
-histogram(X(~Y,:)*m+k);
+yhat=l.predict(X);
+histogram(yhat(Y)); hold on
+histogram(yhat(~Y));
 
 %% simulate responses to two classes with different covariances (QDA)
 n=20;
@@ -42,20 +43,23 @@ X(Y,:)=mvnrnd(mu1, C1, sum(Y));
 X(~Y,:)=mvnrnd(mu2, C2, sum(~Y));
 
 
-[m,k]=pdsa.lda(X,Y);
-
+l=pdsa.lda(X,Y);
+l.train
 figure(1); clf
 subplot(131)
 histogram(X(Y,1)); hold on
 histogram(X(~Y,1));
+title('Single Response', 'FontWeight', 'Normal')
 subplot(132)
-histogram(X(Y,:)*m+k); hold on
-histogram(X(~Y,:)*m+k);
-
+yhat=l.predict(X);
+histogram(yhat(Y)); hold on
+histogram(yhat(~Y));
+title('LDA', 'FontWeight', 'Normal')
 q=pdsa.qda(X,Y);
 q.train;
-[Q,m,k]=q.coeficients;
+[Q,m,k]=q.coefficients;
 subplot(133)
 Yhat=q.predict(X);
 histogram(Yhat(Y)); hold on
 histogram(Yhat(~Y));
+title('QDA', 'FontWeight', 'Normal')
