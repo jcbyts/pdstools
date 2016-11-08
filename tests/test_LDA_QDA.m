@@ -56,7 +56,7 @@ histogram(yhat(Y)); hold on
 histogram(yhat(~Y));
 title('LDA', 'FontWeight', 'Normal')
 q=pdsa.qda(X,Y);
-q.train;
+q.train(.2, 1);
 [Q,m,k]=q.coefficients;
 subplot(133)
 Yhat=q.predict(X);
