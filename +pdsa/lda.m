@@ -33,9 +33,13 @@ classdef lda < handle
 
         end
         
-        function train(l)
-            l.m = l.C\(l.mu1-l.mu2);
-            l.k = .5 * (l.mu2'*(l.C\l.mu2)-l.mu1'*(l.C\l.mu1));
+        function train(l, rho)
+            if nargin<2
+                rho=1;
+            end
+            Chat=l.C*rho + (1-rho)*eye(size(l.C,1));
+            l.m = Chat\(l.mu1-l.mu2);
+            l.k = .5 * (l.mu2'*(Chat\l.mu2)-l.mu1'*(Chat\l.mu1));
         end
         
         function [mOut, kOut]=coefficients(l)

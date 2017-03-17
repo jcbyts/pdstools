@@ -134,33 +134,33 @@ sacsize=sqrt(sum((trace(:,endindex)-trace(:,startindex)).^2));
 %  toc
 %  [a,b]=max(sacdur);
 
-% figure;
-% for iSaccade= 1:length(potential_saccades)
-%     this_trace=trace(:,startindex(iSaccade)+(-100 : 2000));
-%     this_speed=speed(startindex(iSaccade)+(-100 : 2000));
-%     this_speedspeedf=speedspeedf(startindex(iSaccade)+(-100 : 2000));
-%     this_velocity = vel(:,startindex(iSaccade)+(-100 : 2000));
-% %     this_pupil = pupil(startindex(iSaccade)+(-100 : 2000));
-%     subplot(2,1,1)
+figure;
+for iSaccade= 1:length(potential_saccades)
+    this_trace=trace(:,startindex(iSaccade)+(-100 : 2000));
+    this_speed=speed(startindex(iSaccade)+(-100 : 2000));
+    this_speedspeedf=speedspeedf(startindex(iSaccade)+(-100 : 2000));
+    this_velocity = vel(:,startindex(iSaccade)+(-100 : 2000));
+%     this_pupil = pupil(startindex(iSaccade)+(-100 : 2000));
+    subplot(2,1,1)
+    hold off;
+    plot(-100:2000,this_trace');
+    hold on;
+    plot([0 0], [min(min(this_trace)) max(max(this_trace))], '-k');
+    plot([endindex(iSaccade) endindex(iSaccade)]-startindex(iSaccade), [min(min(this_trace)) max(max(this_trace))], '--k');
+    subplot(2,1,2)
+    hold off;
+    plot(-100:2000,this_speed);
+    hold all;
+%     plot(-100:2000,this_speedspeedf);
+    plot(-100:2000,this_velocity');
+    plot([0 0], [min(this_speed) max(this_speed)], '-k');
+    plot([endindex(iSaccade) endindex(iSaccade)]-startindex(iSaccade), [min(this_speed) max(this_speed)], '--k');
+%     subplot(3,1,3)
 %     hold off;
-%     plot(-100:2000,this_trace');
-%     hold on;
-%     plot([0 0], [min(min(this_trace)) max(max(this_trace))], '-k');
-%     plot([endindex(iSaccade) endindex(iSaccade)]-startindex(iSaccade), [min(min(this_trace)) max(max(this_trace))], '--k');
-%     subplot(2,1,2)
-%     hold off;
-%     plot(-100:2000,this_speed);
-%     hold all;
-% %     plot(-100:2000,this_speedspeedf);
-%     plot(-100:2000,this_velocity');
-%     plot([0 0], [min(this_speed) max(this_speed)], '-k');
-%     plot([endindex(iSaccade) endindex(iSaccade)]-startindex(iSaccade), [min(this_speed) max(this_speed)], '--k');
-% %     subplot(3,1,3)
-% %     hold off;
-% %     plot(-100:2000,this_pupil);
-%     
-%     waitforbuttonpress
-% end
+%     plot(-100:2000,this_pupil);
+    
+    waitforbuttonpress
+end
 
 result=[time(startindex); time(endindex); sacdur; sacsize; trace(:,startindex); trace(:,endindex); startindex; endindex];
 if nargout>1

@@ -15,7 +15,7 @@ X(~Y,:)=mvnrnd(mu2, C, sum(~Y));
 
 
 l=pdsa.lda(X,Y);
-l.train
+l.train(.99)
 figure(1); clf
 subplot(121)
 histogram(X(Y,1)); hold on
