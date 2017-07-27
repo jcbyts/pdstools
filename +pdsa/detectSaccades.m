@@ -10,6 +10,7 @@ p.addOptional('minIsi', 50)
 p.addOptional('minDur', 5)
 p.addOptional('blinkIsi', 50)
 p.addOptional('velocityMode', true)
+p.addOptional('verbose', true)
 p.parse(varargin{:});
 
 %% parameters to tweak
@@ -134,6 +135,7 @@ sacsize=sqrt(sum((trace(:,endindex)-trace(:,startindex)).^2));
 %  toc
 %  [a,b]=max(sacdur);
 
+if p.Results.verbose
 figure;
 for iSaccade= 1:length(potential_saccades)
     this_trace=trace(:,startindex(iSaccade)+(-100 : 2000));
@@ -160,6 +162,7 @@ for iSaccade= 1:length(potential_saccades)
 %     plot(-100:2000,this_pupil);
     
     waitforbuttonpress
+end
 end
 
 result=[time(startindex); time(endindex); sacdur; sacsize; trace(:,startindex); trace(:,endindex); startindex; endindex];

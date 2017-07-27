@@ -1,4 +1,5 @@
 function dp=dprime(x,y)
+% dp=dprime(x,y)
 
 classes=unique(y);
 assert(numel(classes)==2, 'Two classes requried to compute d''')

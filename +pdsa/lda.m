@@ -27,7 +27,8 @@ classdef lda < handle
             Y=Y==max(classes); % make it logical aligned to max class
             
             % get the required values
-            l.C=X'*X/numel(Y);
+%             l.C=X'*X/numel(Y);
+            l.C = cov(X,1);
             l.mu1=mean(X(Y,:))';
             l.mu2=mean(X(~Y,:))';
 
