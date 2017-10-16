@@ -1,5 +1,18 @@
 function [result, smoothTrace] = detectSaccades(time,trace, varargin)
 % [result, smoothTrace] = saccadeDetector(time,trace)
+% result
+% 1. timeStart
+% 2. timeEnd
+% 3. Duration
+% 4. Size
+% 5. StartX
+% 6. StartY
+% 7. EndX
+% 8. EndY
+
+if size(time,1) > size(time,2)
+    time = time';
+end
 
 p=inputParser();
 p.addOptional('filterPosition', 1)
