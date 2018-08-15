@@ -1,184 +1,291 @@
-function [result, smoothTrace] = detectSaccades(time,trace, varargin)
-% [result, smoothTrace] = saccadeDetector(time,trace)
-% result
-% 1. timeStart
-% 2. timeEnd
-% 3. Duration
-% 4. Size
-% 5. StartX
-% 6. StartY
-% 7. EndX
-% 8. EndY
+function [result, smoothTrace] = detectSaccades(sampleTimes,eyeData, varargin)
+% [result, smoothTrace] = saccadeDetector(time,trace,varargin)
+% Detect saccades from an X,Y trace using velocity thresholds
+% Inputs:
+%   sampleTimes  [1 x n]    Time of each sample in eyeData
+%   eyeData      [2 x n]    XY position of the eye in degrees
+% Optional Arguments as argument-pair input (default)
+%   'filterPosition' (1)    Smooth the position traces by <n> samples
+%   'filterLength'  (20)    Length (samples) of boxcar for smoothing velocity
+%   'detectThresh' (100)    Threshold (deg/sec) to detect saccades
+%   'startThresh'    (5)    Threshold (deg/sec) for the start of a saccade
+%   'minIsi'        (25)    Minimum ISI (samples)
+%   'blinkIsi'      (50)    Padding around blinks (samples)
+%   'velocityMode' (true)   Project onto saccade vector to measure velocity
+%   'verbose',    (false)   Report some details about the saccade detection
+% Output:
+%   result (struct)
+%       .start         saccade start time
+%       .end           saccade end time
+%       .duration      saccade duration
+%       .size          saccade size
+%       .startXpos     x position at start
+%       .startYpos     y position at start
+%       .endXpos       x position at end
+%       .endYpos       y position at end
+%       .startIndex    start index (into data trace)
+%       .endIndex      end index
+%   smoothTrace [2 x n]     Smoothed position trace
 
-if size(time,1) > size(time,2)
-    time = time';
+if size(sampleTimes,1) > size(sampleTimes,2)
+    sampleTimes = sampleTimes';
 end
 
-p=inputParser();
-p.addOptional('filterPosition', 1)
-p.addOptional('filterLength', 20);
-p.addOptional('detectThresh', 100);
-p.addOptional('startThresh', 5)
-p.addOptional('minIsi', 50)
-p.addOptional('minDur', 5)
-p.addOptional('blinkIsi', 50)
-p.addOptional('velocityMode', true)
-p.addOptional('verbose', true)
-p.parse(varargin{:});
+ip=inputParser();
+ip.addOptional('filterPosition', 1)
+ip.addOptional('filterLength', 20);
+ip.addOptional('detectThresh', 200);
+ip.addOptional('startThresh', 5)
+ip.addOptional('minIsi', 25)
+ip.addOptional('minDur', 5)
+ip.addOptional('blinkIsi', 50)
+ip.addOptional('velocityMode', true)
+ip.addOptional('verbose', true)
+ip.parse(varargin{:});
 
-%% parameters to tweak
-pos_filter_length=p.Results.filterPosition; % short filter to smooth for noisy eye traces
-if pos_filter_length>1
-    trace=filtfilt(ones(pos_filter_length,1)/pos_filter_length, 1, trace')';
+% --- filter position
+pos_filter_length = ip.Results.filterPosition; % short filter to smooth for noisy eye traces
+
+if pos_filter_length > 1
+    eyeData = filtfilt(ones(pos_filter_length,1)/pos_filter_length, 1, eyeData')';
 end
-filter_length=p.Results.filterLength; %number of amples to average for baseline velocity
-detect_thresh=p.Results.detectThresh; % threshold in deg/s to detect a saccade
-start_thresh=p.Results.startThresh; % threshold in deg/s to determine the start and end of a saccade
-min_isi=p.Results.minIsi; %minimum number of samples between any two saccades
-minDur=p.Results.minDur; %minimum duration of a saccade
-blink_isi=p.Results.blinkIsi; %ignore saccades this many samples around a blink
-reproject_onto_saccade_direction=p.Results.velocityMode; %work on signed velocity instead of speed
 
-%% calculate veocities
-tps=median(diff(time));
-vel=[[0;0],(trace(:,3:end)-trace(:,1:end-2))/(tps*2),[0;0]];
-speed=sqrt(sum(vel.^2));
+filter_length = ip.Results.filterLength; % number of amples to average for baseline velocity
+detect_thresh = ip.Results.detectThresh; % threshold in deg/s to detect a saccade
+start_thresh  = ip.Results.startThresh;  % threshold in deg/s to determine the start and end of a saccade
+min_isi       = ip.Results.minIsi;       % minimum number of samples between any two saccades
+minDur        = ip.Results.minDur;       % minimum duration of a saccade (samples)
+blink_isi     = ip.Results.blinkIsi;     % ignore saccades this many samples around a blink
+reproject_onto_saccade_direction   = ip.Results.velocityMode; % work on signed velocity instead of speed
+
+%% calculate velocities
+Fs  = mode(diff(sampleTimes)); % find sampling rate
+vel = [[0;0],(eyeData(:,3:end)-eyeData(:,1:end-2))/(Fs*2),[0;0]];
+speed = sqrt(sum(vel.^2));
 
 
-if filter_length>1
+if filter_length > 1
+    % boxcar filter
     a = 1;
     b = ones(1,filter_length/2)/filter_length/2;
-    speedf = filter(b,a,speed);
+%     speedf = filter(b,a,speed);
+    speedf = filtfilt(b,a,speed);
     speedspeedf=speed-speedf;
 else
-    speedf=speed;
-    speedspeedf=speed;
+    speedf = speed;
+    speedspeedf = speed;
 end
 
 
 
-
-potential_saccades=diff([0 (speedspeedf)>detect_thresh])==1;%check data start condition, consider loader more data before...
-potential_saccades=find(potential_saccades);
-if numel(potential_saccades)>1
+% find eye speeds that exceed the detection threshold
+potential_saccades = diff([0 (speedspeedf) > detect_thresh]) == 1;
+potential_saccades = find(potential_saccades);
+% remove isi violations
+if numel(potential_saccades) > 1
     potential_saccades([min_isi diff(potential_saccades)]<min_isi)=[];
 end
 
+% --- Loop over potential saccades. Estimate some parameters of the saccade
+numPotential = length(potential_saccades);
+startIndex = zeros(numPotential,1);
+endIndex   = zeros(numPotential,1);
+baseSpeed  = zeros(numPotential,1);
+endSpeed = zeros(numPotential,1);
 
-for iSaccade=1:length(potential_saccades)
+if ip.Results.verbose
+    fprintf('Found %d potential saccades\n', numPotential)
+end
+
+if ip.Results.verbose
+    figure;
+end
+
+for iSaccade = 1:numPotential
+%     if ip.Results.verbose
+%         iix = -100:500;
+%         inds = potential_saccades(iSaccade)+iix;
+%         valid = inds > 0 & inds < size(eyeData,2);
+%         
+%         iix = iix(valid);
+%         inds = inds(valid);
+%         
+%         this_trace = eyeData(:,inds);
+%         this_speed = speed(inds);
+%         this_speedspeedf = speedspeedf(inds);
+%         this_velocity = vel(:,inds);
+%         
+%         subplot(2,1,1)
+%         hold off;
+%         plot(iix,this_trace');
+%         axis tight
+%         
+%         hold on;
+%         plot([0 0], [min(min(this_trace)) max(max(this_trace))], '-k');
+% %         plot([endIndex(iSaccade) endIndex(iSaccade)]-startIndex(iSaccade), [min(min(this_trace)) max(max(this_trace))], '--k');
+%         
+%         subplot(2,1,2)
+%         hold off;
+%         plot(iix,this_speed);
+%         hold all;
+%         plot(iix,this_velocity');
+%         plot(iix,this_speedspeedf');
+%         
+% %         plot([0 0], [min(this_speed) max(this_speed)], '-k');
+% %         plot([endIndex(iSaccade) endIndex(iSaccade)]-startIndex(iSaccade), [min(this_speed) max(this_speed)], '--k');
+%         
+%         axis tight
+%         drawnow
+%         waitforbuttonpress
+%     end
     
-    if iSaccade>1 && potential_saccades(iSaccade)<endindex(iSaccade-1)
-        startindex(iSaccade) = potential_saccades(iSaccade);
-        endindex(iSaccade) = potential_saccades(iSaccade);
-        baseline_speed(iSaccade) = speedf(startindex(iSaccade));
+    % if this potential saccade occured during the previous saccade. Skip
+    if (iSaccade > 1) && (potential_saccades(iSaccade) < endIndex(iSaccade-1))
+        startIndex(iSaccade) = potential_saccades(iSaccade);
+        endIndex(iSaccade)   = potential_saccades(iSaccade);
+        baseSpeed(iSaccade)  = speedf(startIndex(iSaccade));
         continue;
     end
     
-    %something like this:
-    %1. goto beginning of speed-speedf segment, either in a loop, or using find
-    startindex(iSaccade)=potential_saccades(iSaccade);
-    while speedspeedf(startindex(iSaccade))> start_thresh
-        startindex(iSaccade) = startindex(iSaccade)-1;
-    end
-    %2. determine pursuit velocity
-    baseline_speed(iSaccade) = speedf(startindex(iSaccade));
-    endindex(iSaccade)=potential_saccades(iSaccade);
-    %would probabbly be better to project onto motion direction and work on
-    %signed speedocity. if this becomes necessary simply use this as the
-    %starting point, extract samples between these, then project onto
-    %sifference in this short bit only.
-    while speed(endindex(iSaccade)) - baseline_speed(iSaccade) > start_thresh
-        endindex(iSaccade) = endindex(iSaccade)+1;
+    % --- compute parameters
+    % 1. Find the first bin where the unfiltered speed minus the filtered 
+    %    speed exceeds the threshold
+    startIndex(iSaccade) = potential_saccades(iSaccade);
+    while speedspeedf(startIndex(iSaccade)) > start_thresh
+        startIndex(iSaccade) = startIndex(iSaccade) - 1;
     end
     
-%     rem=endindex+blink_isi > size(speed,2);
-%     endindex(rem)=[];
-%     startindex(rem)=[];
-    if endindex(iSaccade)+blink_isi > size(speed,2) || isnan(sum(speed(endindex(iSaccade)+(1:blink_isi)))) || startindex(iSaccade) <= blink_isi || isnan(sum(speed(startindex(iSaccade)-(1:blink_isi))))
-        startindex(iSaccade) = potential_saccades(iSaccade);
-        endindex(iSaccade) = potential_saccades(iSaccade);
+    % 2. determine pursuit velocity using the filtered speed trace
+    baseSpeed(iSaccade) = speedf(startIndex(iSaccade));
+    
+    % initialize the end index
+    endIndex(iSaccade)  = potential_saccades(iSaccade);
+    
+    % walk forward sample by sample until the raw speed return below the
+    % threshold
+    while speed(endIndex(iSaccade)) - baseSpeed(iSaccade) > start_thresh
+        endIndex(iSaccade) = endIndex(iSaccade)+1;
+    end
+    
+    if endIndex(iSaccade)+blink_isi > size(speed,2) ... % end exceeds data duration
+            || isnan(sum(speed(endIndex(iSaccade) + (1:blink_isi)))) ... % not valid data
+            || startIndex(iSaccade) <= blink_isi ... 
+            || isnan(sum(speed(startIndex(iSaccade)-(1:blink_isi))))
+        % store the start and end index as the same value
+        startIndex(iSaccade) = potential_saccades(iSaccade);
+        endIndex(iSaccade)   = potential_saccades(iSaccade);
         continue;
     end
     
 	if reproject_onto_saccade_direction
     %3.now with these estimators of the actual saccade, we will rebase the
-    %velocity along the saccade trajectory to allow using a velocity
-    %instead of speed
-        saccade_vector=trace(:,endindex(iSaccade))-trace(:,startindex(iSaccade));
-        expected_basis = saccade_vector/sqrt(sum(saccade_vector.^2));
-        vxy=expected_basis'*vel(:,(startindex(iSaccade)-filter_length):(endindex(iSaccade)+filter_length));
-        baseline_speed(iSaccade) = sum(vxy(1:filter_length))/filter_length;
-        baseline_endspeed(iSaccade)= sum(vxy(end-filter_length+1:end))/filter_length;
+    % velocity along the saccade trajectory to allow using a velocity
+    % instead of speed
+        
+        % get the saccade vector (from start to end point)
+        saccade_vector = eyeData(:,endIndex(iSaccade))-eyeData(:,startIndex(iSaccade));
+        
+        % make unit vector (can rotate only. no scaling)
+        expected_basis = saccade_vector/norm(saccade_vector); %sqrt(sum(saccade_vector.^2));
+        
+        % project on the saccade vector
+        vxy=expected_basis'*vel(:,(startIndex(iSaccade)-filter_length):(endIndex(iSaccade)+filter_length));
+        
+        % recalculate baseline speed along the saccade vector
+        baseSpeed(iSaccade) = sum(vxy(1:filter_length))/filter_length;
+        
+        endSpeed(iSaccade)= sum(vxy(end-filter_length+1:end))/filter_length;
+        
+        % initialize the old start index
+        old_startindex=startIndex(iSaccade);
+        
+        % find the actual start
+        startIndex(iSaccade) = potential_saccades(iSaccade);
 
-        old_startindex=startindex(iSaccade);
-        startindex(iSaccade)=potential_saccades(iSaccade);
-
-        while vxy(1,startindex(iSaccade)-old_startindex+filter_length+1) - baseline_speed(iSaccade)> start_thresh
-            startindex(iSaccade) = startindex(iSaccade)-1;
+        while vxy(1,startIndex(iSaccade)-old_startindex+filter_length+1) - baseSpeed(iSaccade)> start_thresh
+            startIndex(iSaccade) = startIndex(iSaccade)-1;
         end
-
-        endindex(iSaccade)=potential_saccades(iSaccade);
-
-        while vxy(1,endindex(iSaccade)-old_startindex+filter_length+1) - baseline_endspeed(iSaccade)> start_thresh
-            endindex(iSaccade) = endindex(iSaccade)+1;
+        
+        % find the actual end of saccade
+        endIndex(iSaccade)=potential_saccades(iSaccade);
+        
+        % find the actual end
+        while vxy(1,endIndex(iSaccade)-old_startindex+filter_length+1) - endSpeed(iSaccade)> start_thresh
+            endIndex(iSaccade) = endIndex(iSaccade)+1;
         end
 	end
      
 end
 
+% if there were no saccades, exit the function
 if isempty(iSaccade)
-    result=[];
-    smoothTrace=[];
+    result = [];
+    smoothTrace = [];
     return
 end
-sacdur=endindex-startindex;
-sacsize=sqrt(sum((trace(:,endindex)-trace(:,startindex)).^2));
+
+% --- compute some basic states
+sacdur  = endIndex-startIndex;
+sacsize = sqrt(sum((eyeData(:,endIndex)-eyeData(:,startIndex)).^2));
 %do a hist of saccade durarion, hopefullt a clear cutoff
 %  hist(sacdur, 0:350)
 %  hist(sacsize,0:60)
- 
- startindex(sacdur<minDur) = [];
- endindex(sacdur<minDur) = [];
- baseline_speed(sacdur<minDur) = [];
- potential_saccades(sacdur<minDur) = [];
- 
- sacdur=endindex-startindex;
- sacsize=sqrt(sum((trace(:,endindex)-trace(:,startindex)).^2));
 
-%  toc
-%  [a,b]=max(sacdur);
+% remove saccades below minimum duration
+removeIx = sacdur < minDur; 
+if ip.Results.verbose
+    fprintf('%d potential saccades were shorter than the minimum allowed duration (%d)\n', sum(removeIx), minDur);
+end
 
-if p.Results.verbose
-figure;
-for iSaccade= 1:length(potential_saccades)
-    this_trace=trace(:,startindex(iSaccade)+(-100 : 2000));
-    this_speed=speed(startindex(iSaccade)+(-100 : 2000));
-    this_speedspeedf=speedspeedf(startindex(iSaccade)+(-100 : 2000));
-    this_velocity = vel(:,startindex(iSaccade)+(-100 : 2000));
-%     this_pupil = pupil(startindex(iSaccade)+(-100 : 2000));
-    subplot(2,1,1)
-    hold off;
-    plot(-100:2000,this_trace');
-    hold on;
-    plot([0 0], [min(min(this_trace)) max(max(this_trace))], '-k');
-    plot([endindex(iSaccade) endindex(iSaccade)]-startindex(iSaccade), [min(min(this_trace)) max(max(this_trace))], '--k');
-    subplot(2,1,2)
-    hold off;
-    plot(-100:2000,this_speed);
-    hold all;
-%     plot(-100:2000,this_speedspeedf);
-    plot(-100:2000,this_velocity');
-    plot([0 0], [min(this_speed) max(this_speed)], '-k');
-    plot([endindex(iSaccade) endindex(iSaccade)]-startindex(iSaccade), [min(this_speed) max(this_speed)], '--k');
-%     subplot(3,1,3)
-%     hold off;
-%     plot(-100:2000,this_pupil);
+startIndex(removeIx) = [];
+endIndex(removeIx) = [];
+baseSpeed(removeIx) = [];
+potential_saccades(removeIx) = [];
+ 
+% recompute duration and size
+sacdur  = endIndex-startIndex;
+sacsize = sqrt(sum((eyeData(:,endIndex)-eyeData(:,startIndex)).^2));
+
+result = struct('start', sampleTimes(startIndex)', ...
+    'end', sampleTimes(endIndex)', ...
+    'duration', sacdur, ...
+    'size', sacsize', ...
+    'startXpos', eyeData(1,startIndex)', ...
+    'startYpos', eyeData(2,startIndex)', ...
+    'endXpos', eyeData(1,endIndex)', ...
+    'endYpos', eyeData(2,endIndex)', ...
+    'startIndex', startIndex, ...
+    'endIndex', endIndex);
     
-    waitforbuttonpress
-end
-end
+% result=[sampleTimes(startIndex); sampleTimes(endIndex); sacdur; sacsize; eyeData(:,startIndex); eyeData(:,endIndex); startIndex; endIndex];
 
-result=[time(startindex); time(endindex); sacdur; sacsize; trace(:,startindex); trace(:,endindex); startindex; endindex];
-if nargout>1
-    smoothTrace=trace;
+% % loop over saccades and plot the analysis
+% if ip.Results.verbose
+%     figure;
+%     for iSaccade= 1:length(potential_saccades)
+%         this_trace=eyeData(:,startIndex(iSaccade)+(-100 : 2000));
+%         this_speed=speed(startIndex(iSaccade)+(-100 : 2000));
+%         this_speedspeedf=speedspeedf(startIndex(iSaccade)+(-100 : 2000));
+%         this_velocity = vel(:,startIndex(iSaccade)+(-100 : 2000));
+%         %     this_pupil = pupil(startindex(iSaccade)+(-100 : 2000));
+%         subplot(2,1,1)
+%         hold off;
+%         plot(-100:2000,this_trace');
+%         hold on;
+%         plot([0 0], [min(min(this_trace)) max(max(this_trace))], '-k');
+%         plot([endIndex(iSaccade) endIndex(iSaccade)]-startIndex(iSaccade), [min(min(this_trace)) max(max(this_trace))], '--k');
+%         subplot(2,1,2)
+%         hold off;
+%         plot(-100:2000,this_speed);
+%         hold all;
+%         plot(-100:2000,this_velocity');
+%         plot([0 0], [min(this_speed) max(this_speed)], '-k');
+%         plot([endIndex(iSaccade) endIndex(iSaccade)]-startIndex(iSaccade), [min(this_speed) max(this_speed)], '--k');
+%         
+%         waitforbuttonpress
+%     end
+% end
+
+if nargout > 1
+    smoothTrace = eyeData;
 end
